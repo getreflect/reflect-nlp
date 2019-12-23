@@ -1,8 +1,16 @@
-# imports
+# binary lstm with attention network
 
-# set seed to ensure deterministic output
+# load dataset from disk
+# load embeddings from disk
 
-# load embeddings
-# glove
-# fasttext
-# paragram
+# stratified k fold
+
+# set LR (or use Adam or Cyclic CLR)
+
+# Define NN
+# define embedding layer -- use pretrained embedding layer
+# define simple blstm, hidden size 60
+# LR -> 1e-3
+# dropout -> 1/4
+
+# training loop, reuse from kfold step
