@@ -1,4 +1,4 @@
-# binary lstm with attention network
+# https://www.kaggle.com/jannen/reaching-0-7-fork-from-bilstm-attention-kfold
 
 # load dataset from disk
 # load embeddings from disk
