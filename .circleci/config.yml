@@ -46,5 +46,4 @@ jobs:
           destination: test-reports
 
       - docker-build-release:
-        app-name: reflect-nlp
-        app-arg: -p 8081:8081
+          app-name: reflect-nlp
