@@ -1,4 +1,7 @@
 # reflect-nlp
+
+[![CircleCI](https://circleci.com/gh/jackyzha0/reflect-nlp.svg?style=svg)](https://circleci.com/gh/jackyzha0/reflect-nlp)
+
 the backend to determine intent validity and stats aggregation. <br>
 
 [the main repo.](https://github.com/jackyzha0/reflect-chrome)
