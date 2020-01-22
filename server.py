@@ -18,4 +18,4 @@ def parseIntent():
 	return jsonify({'status': 'bad json'}), 400
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=8081)
+    app.run(host='localhost', port=5000)

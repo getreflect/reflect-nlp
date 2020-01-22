@@ -5,5 +5,5 @@ COPY server.py server.py
 
 RUN pip install -r requirements.txt
 
-EXPOSE 8081
+EXPOSE 5000
 CMD python server.py
