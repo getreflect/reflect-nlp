@@ -5,6 +5,10 @@ import os
 
 app = Flask(__name__)
 
+@app.route('/', methods=['GET'])
+def healthCheck():
+	return jsonify({'status': 'healthy'}), 200
+
 @app.route('/', methods=['POST'])
 def parseIntent():
 	if request.is_json:
@@ -19,5 +23,4 @@ def parseIntent():
 	return jsonify({'status': 'bad json'}), 400
 
 if __name__ == '__main__':
-	# bind to Heroku defined port, if not defined, bind to 5000
-    app.run(host='localhost', port=int(os.environ.get('PORT', 5000)))
+    app.run()
