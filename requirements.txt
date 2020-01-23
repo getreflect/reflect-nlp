@@ -1,2 +1,2 @@
-Flask==0.10.1
-gunicorn==19.7.1
+flask
+gunicorn
