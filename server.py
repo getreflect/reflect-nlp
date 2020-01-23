@@ -18,4 +18,5 @@ def parseIntent():
 	return jsonify({'status': 'bad json'}), 400
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=5000)
+	# bind to Heroku defined port, if not defined, bind to 5000
+    app.run(host='localhost', port=int(os.environ.get('PORT', 5000)))
