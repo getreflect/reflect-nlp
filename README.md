@@ -8,7 +8,7 @@ the backend to determine intent validity and stats aggregation. <br>
 
 ### Docker build instructions
 1. Build latest docker image: `docker build -t jzhao2k19/reflect-nlp:latest .`
-2. Run the image on port 8081: `docker run -p 5000:5000 jzhao2k19/reflect-nlp:latest`
+2. Run the image on port 5000: `docker run -p 5000:5000 jzhao2k19/reflect-nlp:latest`
 
 ### Running the NLP Model
 This project depends on a bunch of Python libraries. Install them by doing `pip install sklearn keras pandas numpy matplotlib`
