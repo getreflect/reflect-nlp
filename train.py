@@ -4,6 +4,7 @@ import numpy as np  # more data processing stuff
 import pandas as pd  # data processing/analysis
 import os
 import yaml
+import json
 import datetime
 
 # -- Deep Learning Libraries --
@@ -72,9 +73,9 @@ model.compile(loss='binary_crossentropy',
 
 # Model Training
 model.fit(padded_seqs, Y_train, batch_size=BATCH_SIZE, epochs=NUM_EPOCHS,
-          validation_split=VALIDATION_SPLIT, callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.000001, patience = 3)])
+          validation_split=VALIDATION_SPLIT, callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.000001, patience=3)])
 
-
+# Run model on test set
 test_seqs = tokenizer.texts_to_sequences(X_test)
 padded_test_seqs = sequence.pad_sequences(
     test_seqs, maxlen=SEQUENCE_MAX_LENGTH)
@@ -82,18 +83,17 @@ accr = model.evaluate(padded_test_seqs, Y_test)
 print('Test set\n  Loss: {:0.3f}\n  Accuracy: {:0.3f}'.format(
     accr[0], accr[1]))
 
+# Print some example classifications from intent list
 seq = tokenizer.texts_to_sequences(df.intent.tail(TAIL_SIZE))
 padded_seq = sequence.pad_sequences(seq, maxlen=SEQUENCE_MAX_LENGTH)
 preds = model.predict(padded_seq)
-
 out = list(zip(df.intent.tail(TAIL_SIZE), df.valid.tail(TAIL_SIZE), preds))
 for obs in out:
     print('Intent: %s   Actual Class: %s   Predicted Class: %s' %
           (obs[0], obs[1], "yes" if obs[2][0] > 0.5 else "no"))
 
-
 # Define Model Name
-model_name = "acc%d" % (accr[1] * 100)
+model_name = "acc%.2f" % (accr[1] * 100)
 os.mkdir('models/' + model_name)
 
 # save weights as HDF5
@@ -102,17 +102,22 @@ print("Saved model to disk")
 
 # save model as JSON
 model_json = model.to_json()
-with open("models/" + model_name + "/model.json", "w") as json_file:
-    json_file.write(model_json)
+with open("models/" + model_name + "/model.json", "w") as file:
+    file.write(model_json)
 
-# write details to YAML
-detail_dict = [{'TOKENIZER_VOCAB_SIZE': TOKENIZER_VOCAB_SIZE},
-	{'SEQUENCE_MAX_LENGTH': SEQUENCE_MAX_LENGTH},
-	{'BATCH_SIZE': BATCH_SIZE},
-	{'NUM_EPOCHS': NUM_EPOCHS},
-	{'TRAIN_TEST_SPLIT': TRAIN_TEST_SPLIT},
-	{'VALIDATION_SPLIT': VALIDATION_SPLIT},
-	{'TRAINED_AT': datetime.datetime.now()}]
+# save tokenizer as JSON
+tokenizer_json = tokenizer.to_json()
+with open("models/" + model_name + "/tokenizer.json", 'w', encoding='utf-8') as file:
+    file.write(json.dumps(tokenizer_json, ensure_ascii=False))
+
+# write training details to YAML
+detail_dict = {'TOKENIZER_VOCAB_SIZE': TOKENIZER_VOCAB_SIZE,
+               'SEQUENCE_MAX_LENGTH': SEQUENCE_MAX_LENGTH,
+               'BATCH_SIZE': BATCH_SIZE,
+               'NUM_EPOCHS': NUM_EPOCHS,
+               'TRAIN_TEST_SPLIT': TRAIN_TEST_SPLIT,
+               'VALIDATION_SPLIT': VALIDATION_SPLIT,
+               'TRAINED_AT': datetime.datetime.now()}
 
 with open("models/" + model_name + "/details.yaml", "w") as file:
     documents = yaml.dump(detail_dict, file)
