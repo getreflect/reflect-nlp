@@ -35,10 +35,7 @@ df = pd.read_csv('data/survey.csv', sep="\t",
                  header=None, names=["intent", "valid"])
 
 # Clean text
-numPunc = df.intent.apply(data_proc.countPunctuation)
 df['intent'] = df.intent.apply(data_proc.stripPunctuation)
-
-numCaps = df.intent.apply(data_proc.countCaps)
 df['intent'] = df.intent.apply(data_proc.stripCaps)
 df['intent'] = df.intent.apply(data_proc.rmPersonalPrefix)
 print('-- Some sample intents --')

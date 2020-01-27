@@ -1,10 +1,14 @@
 import json
+import sys
+import getopt
 import yaml
 
-from tensorflow.keras.models import model_from_json # fix threads crash
+import data_proc
+
 from keras.preprocessing import sequence
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.text import tokenizer_from_json
+from tensorflow.keras.models import model_from_json  # fix threads crash
 
 
 class Model():
@@ -37,11 +41,16 @@ class Model():
         self.loaded_model.load_weights(self.MODEL_DIR + "weights.h5")
 
     def loadParams(self):
-    	# load saved parameters
+        # load saved parameters
         with open(self.MODEL_DIR + 'details.yaml', 'r') as config:
             return yaml.full_load(config)
 
     def pred(self, X: str) -> bool:
+        # clean input X
+        X = data_proc.stripPunctuation(X)
+        X = data_proc.stripCaps(X)
+        X = data_proc.rmPersonalPrefix(X)
+
         # tokenize input
         seq = self.tokenizer.texts_to_sequences([X])
 
@@ -55,6 +64,35 @@ class Model():
         # return thresholded value
         return (preds > self.threshold)
 
+# parse command line arguments if run directly
 if __name__ == '__main__':
-    m = Model("acc81.08", threshold=0.5)
-    print(m.pred("do some work"))
+    argv = sys.argv[1:]
+
+    model = 'acc81.08'
+    threshold = 0.5
+    intent = 'need to do some work'
+
+    unixOptions = "hi:mt"
+    gnuOptions = ["help", "intent=", "model", "threshold"]
+    errString = 'serve_model.py -m <nameofmodel> -t <threshold> -i <intent>'
+
+    try:
+        opts, args = getopt.getopt(argv, unixOptions, gnuOptions)
+    except getopt.GetoptError:
+        print(errString)
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            print(errString)
+            sys.exit(2)
+        elif opt in ("-t", "--threshold"):
+            threshold = float(arg)
+        elif opt in ("-i", "--intent"):
+            intent = arg
+        elif opt in ("-m", "--model"):
+            model = arg
+
+    m = Model(model, threshold)
+    print('Predicting using model %s with threshold %.2f on intent "%s"' %
+          (model, threshold, intent))
+    print('Output -> %s' % m.pred(intent))
