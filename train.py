@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt  # graphing
 import numpy as np  # more data processing stuff
 import pandas as pd  # data processing/analysis
 import os
+import yaml
+import datetime
 
 # -- Deep Learning Libraries --
 from keras.callbacks import EarlyStopping
@@ -103,12 +105,14 @@ model_json = model.to_json()
 with open("models/" + model_name + "/model.json", "w") as json_file:
     json_file.write(model_json)
 
-# write training details to file
-f = open("models/" + model_name + "/details.txt", "w")
-f.write("Tokenizer Vocab Size: " + str(TOKENIZER_VOCAB_SIZE) + "\n")
-f.write("Max Token Sequence Length: " + str(SEQUENCE_MAX_LENGTH) + "\n")
-f.write("Batch size: " + str(BATCH_SIZE) + "\n")
-f.write("Number of Epochs: " + str(NUM_EPOCHS) + "\n")
-f.write("Train/Test Split Ratio: " + str(TRAIN_TEST_SPLIT) + "\n")
-f.write("Validation Split Ratio: " + str(VALIDATION_SPLIT))
-f.close()
+# write details to YAML
+detail_dict = [{'TOKENIZER_VOCAB_SIZE': TOKENIZER_VOCAB_SIZE},
+	{'SEQUENCE_MAX_LENGTH': SEQUENCE_MAX_LENGTH},
+	{'BATCH_SIZE': BATCH_SIZE},
+	{'NUM_EPOCHS': NUM_EPOCHS},
+	{'TRAIN_TEST_SPLIT': TRAIN_TEST_SPLIT},
+	{'VALIDATION_SPLIT': VALIDATION_SPLIT},
+	{'TRAINED_AT': datetime.datetime.now()}]
+
+with open("models/" + model_name + "/details.yaml", "w") as file:
+    documents = yaml.dump(detail_dict, file)

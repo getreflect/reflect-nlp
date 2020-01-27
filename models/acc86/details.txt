@@ -1,6 +1,0 @@
-Tokenizer Vocab Size: 500
-Max Token Sequence Length: 75
-Batch size: 128
-Number of Epochs: 10
-Train/Test Split Ratio: 0.1
-Validation Split Ratio: 0.1
