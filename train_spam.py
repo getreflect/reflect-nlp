@@ -17,38 +17,36 @@ import net
 import data_proc
 
 # -- Params --
-TOKENIZER_VOCAB_SIZE = 500
+TOKENIZER_VOCAB_SIZE = 1000
 SEQUENCE_MAX_LENGTH = 75
 BATCH_SIZE = 64
-NUM_EPOCHS = 100
+NUM_EPOCHS = 10
 TRAIN_TEST_SPLIT = 0.15
-VALIDATION_SPLIT = 0.1
+VALIDATION_SPLIT = 0.2
 
 # Load survey info
 print('Loading Dataframe')
-df = pd.read_csv('data/survey.csv', sep="\t",
-                 header=None, names=["intent", "valid"])
-print('Number of invalid intents: %d' % len(df[df.valid == 'no']))
-print('Number of valid intents: %d' % len(df[df.valid == 'yes']))
+df = pd.read_csv('data/spam.csv', sep="\t", encoding='latin-1')
+df.head()
 
 # Map labels
-df['valid'] = df.valid.map({'no': 0, 'yes': 1})
+df['v1'] = df.v1.map({'ham': 0, 'spam': 1})
 print('-- Some sample labels --')
-print(df.valid.tail(5))
+print(df.v1.tail(5))
 
 # Clean text
-numPunc = df.intent.apply(data_proc.countPunctuation)
-df['intent'] = df.intent.apply(data_proc.stripPunctuation)
+numPunc = df.v2.apply(data_proc.countPunctuation)
+df['v2'] = df.v2.apply(data_proc.stripPunctuation)
 
-numCaps = df.intent.apply(data_proc.countCaps)
-df['intent'] = df.intent.apply(data_proc.stripCaps)
-df['intent'] = df.intent.apply(data_proc.rmPersonalPrefix)
+numCaps = df.v2.apply(data_proc.countCaps)
+df['v2'] = df.v2.apply(data_proc.stripCaps)
+df['v2'] = df.v2.apply(data_proc.rmPersonalPrefix)
 print('-- Some sample intents --')
-print(df.intent.tail(5))
+print(df.v2.tail(5))
 
 # create X (input) and Y (expected)
-X = df.intent
-Y = df.valid
+X = df.v2
+Y = df.v1
 
 # create new Label encoder
 labelEncoder = LabelEncoder()
@@ -84,7 +82,7 @@ padded_test_seqs = sequence.pad_sequences(
 accr = model.evaluate(padded_test_seqs, Y_test)
 print('Test set\n  Loss: {:0.3f}\n  Accuracy: {:0.3f}'.format(accr[0],accr[1]))
 
-for intent in df.intent.sample(10):
+for intent in df.v2.sample(10):
 	seq = tokenizer.texts_to_sequences([intent])
 	padded_seq = sequence.pad_sequences(seq, maxlen=SEQUENCE_MAX_LENGTH)
 	preds = model.predict(padded_seq)
