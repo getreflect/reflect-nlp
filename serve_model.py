@@ -1,7 +1,7 @@
 import json
 import yaml
 
-from keras.models import model_from_json
+from tensorflow.keras.models import model_from_json # fix threads crash
 from keras.preprocessing import sequence
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.text import tokenizer_from_json
