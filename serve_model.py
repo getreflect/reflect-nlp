@@ -45,7 +45,7 @@ class Model():
         with open(self.MODEL_DIR + 'details.yaml', 'r') as config:
             return yaml.full_load(config)
 
-    def pred(self, X: str) -> bool:
+    def pred(self, X: str):
         # clean input X
         X = data_proc.stripPunctuation(X)
         X = data_proc.stripCaps(X)
@@ -66,19 +66,26 @@ class Model():
 
 # parse command line arguments if run directly
 if __name__ == '__main__':
+    # read command line flags
     argv = sys.argv[1:]
 
+    # define default parameters
     model = 'acc81.08'
     threshold = 0.5
     intent = 'need to do some work'
 
+    # acceptable flags -> -h, -i, -h, -t
+    # full length flags -> --help, --intent, --model, --threshold
     unixOptions = "hi:mt"
     gnuOptions = ["help", "intent=", "model", "threshold"]
+
+    # string to print on -h or err
     errString = 'serve_model.py -m <nameofmodel> -t <threshold> -i <intent>'
 
     try:
         opts, args = getopt.getopt(argv, unixOptions, gnuOptions)
     except getopt.GetoptError:
+        # error when parsing flags
         print(errString)
         sys.exit(2)
     for opt, arg in opts:
@@ -92,6 +99,7 @@ if __name__ == '__main__':
         elif opt in ("-m", "--model"):
             model = arg
 
+    # create actual model
     m = Model(model, threshold)
     print('Predicting using model %s with threshold %.2f on intent "%s"' %
           (model, threshold, intent))
