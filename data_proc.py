@@ -1,38 +1,24 @@
-# imports
+PUNC_CHARS = "\'\"?!:;@.,"
 
-# set seed to ensure deterministic output
+# remove I, I'm from start
+def rmPersonalPrefix(s):
+	s = remove_prefix(s, "im ")
+	s = remove_prefix(s, "i ")
+	return s
 
-# load embeddings
-# glove
-# fasttext
-# paragram
+# remove prefix from string
+def remove_prefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text
 
-# data normalization
-# expand contractions
-# clean contractions (use same type of apostrophe)
-# fix typos
-# remove unknown punctuation
-# replace all numbers with #
-# misc special character replacement
-# check to see if lowercase version is in embedding
-# remove all punctuation
-# fill NA values
+# remove punctuation from string
+def stripPunctuation(s):
+	for c in PUNC_CHARS:
+		s = s.replace(c, "")
+	s = s.replace("/", " ")
+	return s
 
-# add extra features
-# text
-# total length
-# number of capital characters
-# num cap / length
-# num words
-# num unique words
-# unique / words
-
-# tokenize sentences
-
-# pad sequences
-
-# shuffle
-# save training data/features/other
-
-# create new embedding matrix that is the mean of all 3
-# save embedding matrix to disk
+# to lower
+def stripCaps(s):
+	return s.lower()

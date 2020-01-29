@@ -1,16 +1,20 @@
-# https://www.kaggle.com/jannen/reaching-0-7-fork-from-bilstm-attention-kfold
+from keras.layers import Activation
+from keras.layers import Dense
+from keras.layers import Dropout
+from keras.layers import Embedding
+from keras.layers import Input
+from keras.layers import LSTM
+from keras.models import Model
 
-# load dataset from disk
-# load embeddings from disk
-
-# stratified k fold
-
-# set LR (or use Adam or Cyclic CLR)
-
-# Define NN
-# define embedding layer -- use pretrained embedding layer
-# define simple blstm, hidden size 60
-# LR -> 1e-3
-# dropout -> 1/4
-
-# training loop, reuse from kfold step
+# Define RNN Architecture
+def RNN(max_seq_len, vocab_size):
+    inputs = Input(name='inputs', shape=[max_seq_len])
+    layer = Embedding(vocab_size, 50, input_length=max_seq_len)(inputs)
+    layer = LSTM(64)(layer)
+    layer = Dense(256, name='FC1')(layer)
+    layer = Activation('relu')(layer)
+    layer = Dropout(0.5)(layer)
+    layer = Dense(1, name='out_layer')(layer)
+    layer = Activation('sigmoid')(layer)
+    model = Model(inputs=inputs, outputs=layer)
+    return model
