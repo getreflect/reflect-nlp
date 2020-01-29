@@ -33,4 +33,4 @@ def parseIntent():
 if __name__ == '__main__':
     logging.info("Starting server...")
     m = Model("acc81.08", threshold=0.5)
-    app.run()
+    app.run(host = "0.0.0.0", port = 5000)
