@@ -3,6 +3,7 @@
 package middleware
 
 import (
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -14,10 +15,13 @@ import (
 
 // UserExpiryTime is the time before deleting user from User Map
 const UserExpiryTime time.Duration = 3 * time.Minute
+
 // MapRefreshRate is how often we check the map for expired users
 const MapRefreshRate time.Duration = 1 * time.Minute
+
 // AvgTokenRate is the limit of average token consumption
 const AvgTokenRate rate.Limit = 1
+
 // MaxTokenRate is the limit of spike token consumption
 const MaxTokenRate int = 2
 
@@ -34,7 +38,7 @@ var mu sync.RWMutex
 
 // Run a background goroutine to remove old entries from the visitors map.
 func init() {
-	log.Info()
+	log.Info("Started background goroutine...")
 	go cleanupVisitors()
 }
 
@@ -82,7 +86,6 @@ func cleanupVisitors() {
 		time.Sleep(MapRefreshRate)
 
 		mu.Lock()
-		defer mu.Unlock()
 
 		// iterate users
 		for ip, v := range Users {
@@ -93,13 +96,29 @@ func cleanupVisitors() {
 				delete(Users, ip)
 			}
 		}
+
+		mu.Unlock()
 	}
 }
 
-// RateLimit is a middleware to 
+func getIP(r *http.Request) string {
+	ip := r.Header.Get("X-REAL-IP")
+	if ip == "" {
+		ip = r.Header.Get("X-FORWARDED-FOR")
+	}
+	if ip == "" {
+		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
+	return ip
+}
+
+// RateLimit is a middleware to
 func RateLimit(req http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ip := r.Header.Get("X-Forwarded-For")
+		ip := getIP(r)
+
+		log.Infof("Received request: %s", ip)
+
 		limiter := getLimiter(ip)
 
 		// if rate limited, return 429
