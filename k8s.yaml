@@ -1,0 +1,107 @@
+### Ingress Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ingress
+  name: ingress
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingress
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ingress
+    spec:
+      containers:
+      - image: jzhao2k19/reflect-nlp-ingress:latest
+        name: ingress
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+
+---
+### Ingress Service
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: "ingress-service"
+  namespace: "default"
+  labels:
+    app: "ingress"
+spec:
+  ports:
+  - protocol: "TCP"
+    port: 80
+    targetPort: 8080
+  selector:
+    app: "ingress"
+  type: "LoadBalancer"
+
+
+---
+### NLP Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  generation: 1
+  labels:
+    app: nlp
+  name: nlp
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nlp
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nlp
+    spec:
+      containers:
+      - image: jzhao2k19/reflect-nlp:latest
+        name: nlp
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+
+---
+### NLP Service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nlp
+  name: nlp-service
+  namespace: default
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - nodePort: 32610
+    port: 30000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: nlp
+  sessionAffinity: None
+  type: NodePort

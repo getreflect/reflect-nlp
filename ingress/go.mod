@@ -1,4 +1,4 @@
-module github.com/jackyzha0/reflect-nlp
+module github.com/jackyzha0/reflect-nlp/ingress
 
 go 1.13
 
