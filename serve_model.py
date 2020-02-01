@@ -7,7 +7,7 @@ import data_proc
 
 from keras.preprocessing import sequence
 from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.text import tokenizer_from_json
+from tensorflow.keras.preprocessing.text import tokenizer_from_json
 from tensorflow.keras.models import model_from_json  # fix threads crash
 
 
