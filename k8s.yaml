@@ -18,13 +18,15 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: ingress
     spec:
       containers:
       - image: jzhao2k19/reflect-nlp-ingress:latest
         name: ingress
+        resources:
+          requests:
+            cpu: "250m"
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -79,6 +81,9 @@ spec:
       containers:
       - image: jzhao2k19/reflect-nlp:latest
         name: nlp
+        resources:
+          requests:
+            cpu: "250m"
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -105,3 +110,31 @@ spec:
     app: nlp
   sessionAffinity: None
   type: NodePort
+---
+### NLP HPA
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nlp
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nlp
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+---
+### Ingress HPA
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ingress
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ingress
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
