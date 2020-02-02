@@ -1,48 +1,64 @@
 version: 2
 jobs:
   build:
-    docker:
-      - image: circleci/python:3.6.2-stretch-browsers
-        environment:
-          FLASK_CONFIG: testing
+    machine: true
+    environment:
+      - GOOGLE_PROJECT_ID: "reflect-backend"
     steps:
       - checkout
-      - restore_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
-      - run:
-          name: Install Python deps in a venv
+      - run: 
+          name: Build Ingress Docker Image
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-      - save_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
-          paths:
-            - "venv"
-      # - run:
-      #     command: |
-      #       . venv/bin/activate
-      #       python manage.py test
-      - store_artifacts:
-          path: test-reports/
-          destination: tr1A
-      - store_test_results:
-          path: test-reports/
-  deploy:
+            docker build \
+              --build-arg COMMIT_REF=${CIRCLE_SHA1} \
+              --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
+              -t reflect-ingress ingress
+            docker tag reflect-ingress gcr.io/${GOOGLE_PROJECT_ID}/ingress:${CIRCLE_SHA1}
+      - run: 
+          name: Build NLP Docker Image
+          command: |
+            docker build \
+              --build-arg COMMIT_REF=${CIRCLE_SHA1} \
+              --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
+              -t reflect-nlp nlp
+            docker tag reflect-nlp gcr.io/${GOOGLE_PROJECT_ID}/nlp:${CIRCLE_SHA1}
+  push_to_gcr_gke:
     docker:
-      - image: buildpack-deps:trusty
+      - image: google/cloud-sdk
+    environment:
+      - GOOGLE_PROJECT_ID: "reflect-backend"
+      - GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      - GOOGLE_CLUSTER_NAME: "reflect-backend-cluster"
     steps:
       - checkout
-      - run:
-          name: Deploy Master to Heroku
+      - run: 
+          name: Setup Google Cloud SDK
           command: |
-            git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
+            apt-get install -qq -y gettext
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - setup_remote_docker
+      - run: 
+          name: Push Docker Images to GCR
+          command: |
+            gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://gcr.io
+            docker push gcr.io/${GOOGLE_PROJECT_ID}/ingress:${CIRCLE_SHA1}
+            docker push gcr.io/${GOOGLE_PROJECT_ID}/nlp:${CIRCLE_SHA1}
+      - run: 
+          name: Deploy to Kubernetes
+          command: |
+            envsubst < ${HOME}/project/k8s_templated.yml > ${HOME}/k8s.yml
+            kubectl apply -f ${HOME}/k8s.yml
+            kubectl rollout status deployment/${PROJECT_NAME}
 workflows:
   version: 2
-  build-deploy:
+  build_test_deploy:
     jobs:
       - build
-      - deploy:
+      - push_to_gcr_gke:
           requires:
             - build
           filters:
