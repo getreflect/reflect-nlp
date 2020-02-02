@@ -1,0 +1,140 @@
+### Ingress Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ingress
+  name: ingress
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingress
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ingress
+    spec:
+      containers:
+      - image: jzhao2k19/reflect-nlp-ingress:latest
+        name: ingress
+        resources:
+          requests:
+            cpu: "250m"
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+
+---
+### Ingress Service
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: "ingress-service"
+  namespace: "default"
+  labels:
+    app: "ingress"
+spec:
+  ports:
+  - protocol: "TCP"
+    port: 80
+    targetPort: 8080
+  selector:
+    app: "ingress"
+  type: "LoadBalancer"
+
+
+---
+### NLP Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  generation: 1
+  labels:
+    app: nlp
+  name: nlp
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nlp
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nlp
+    spec:
+      containers:
+      - image: jzhao2k19/reflect-nlp:latest
+        name: nlp
+        resources:
+          requests:
+            cpu: "250m"
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+
+---
+### NLP Service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nlp
+  name: nlp-service
+  namespace: default
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - nodePort: 32610
+    port: 30000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: nlp
+  sessionAffinity: None
+  type: NodePort
+---
+### NLP HPA
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nlp
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nlp
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+---
+### Ingress HPA
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ingress
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ingress
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80

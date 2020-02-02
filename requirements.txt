@@ -1,3 +1,0 @@
-flask
-pyyaml
-keras==2.3.1
