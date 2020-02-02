@@ -3,12 +3,12 @@
 [![CircleCI](https://circleci.com/gh/jackyzha0/reflect-nlp.svg?style=svg)](https://circleci.com/gh/jackyzha0/reflect-nlp)
 
 The backend of reflect which determines intent validity and does stats collection. <br>
-
-
-
-Anything related to 
-
 [the main repo.](https://github.com/jackyzha0/reflect-chrome)
+
+
+![Our K8s cluster explained](readme_sources/diagram.png)
+
+Anything related to the ingress controller can be found in `/ingress`. All the NLP stuff can be found in `/nlp`.
 
 ### Docker build instructions
 1. Build ingress proxy image: `docker build -t jzhao2k19/reflect-nlp-ingress:latest ingress`
