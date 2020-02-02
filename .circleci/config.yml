@@ -12,16 +12,14 @@ jobs:
             docker build \
               --build-arg COMMIT_REF=${CIRCLE_SHA1} \
               --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
-              -t reflect-ingress ingress
-            docker tag reflect-ingress gcr.io/${GOOGLE_PROJECT_ID}/ingress:${CIRCLE_SHA1}
+              -t gcr.io/${GOOGLE_PROJECT_ID}/ingress:${CIRCLE_SHA1} ingress
       - run: 
           name: Build NLP Docker Image
           command: |
             docker build \
               --build-arg COMMIT_REF=${CIRCLE_SHA1} \
               --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
-              -t reflect-nlp nlp
-            docker tag reflect-nlp gcr.io/${GOOGLE_PROJECT_ID}/nlp:${CIRCLE_SHA1}
+              -t gcr.io/${GOOGLE_PROJECT_ID}/nlp:${CIRCLE_SHA1} nlp
   push_to_gcr_gke:
     docker:
       - image: google/cloud-sdk
@@ -55,7 +53,7 @@ jobs:
             kubectl rollout status deployment/${PROJECT_NAME}
 workflows:
   version: 2
-  build_test_deploy:
+  build_deploy:
     jobs:
       - build
       - push_to_gcr_gke:
