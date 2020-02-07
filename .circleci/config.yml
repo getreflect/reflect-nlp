@@ -1,26 +1,6 @@
 version: 2
 jobs:
-  build:
-    machine: true
-    environment:
-      - GOOGLE_PROJECT_ID: "reflect-backend"
-    steps:
-      - checkout
-      - run: 
-          name: Build Ingress Docker Image
-          command: |
-            docker build \
-              --build-arg COMMIT_REF=${CIRCLE_SHA1} \
-              --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
-              -t gcr.io/${GOOGLE_PROJECT_ID}/ingress:${CIRCLE_SHA1} ingress
-      - run: 
-          name: Build NLP Docker Image
-          command: |
-            docker build \
-              --build-arg COMMIT_REF=${CIRCLE_SHA1} \
-              --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
-              -t gcr.io/${GOOGLE_PROJECT_ID}/nlp:${CIRCLE_SHA1} nlp
-  push_to_gcr_gke:
+  build_and_push:
     docker:
       - image: google/cloud-sdk
     environment:
@@ -38,6 +18,20 @@ jobs:
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
             gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - run: 
+          name: Build Ingress Docker Image
+          command: |
+            docker build \
+              --build-arg COMMIT_REF=${CIRCLE_SHA1} \
+              --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
+              -t gcr.io/${GOOGLE_PROJECT_ID}/ingress:${CIRCLE_SHA1} ingress
+      - run: 
+          name: Build NLP Docker Image
+          command: |
+            docker build \
+              --build-arg COMMIT_REF=${CIRCLE_SHA1} \
+              --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
+              -t gcr.io/${GOOGLE_PROJECT_ID}/nlp:${CIRCLE_SHA1} nlp
       - setup_remote_docker
       - run: 
           name: Push Docker Images to GCR
@@ -45,20 +39,27 @@ jobs:
             gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://gcr.io
             docker push gcr.io/${GOOGLE_PROJECT_ID}/ingress:${CIRCLE_SHA1}
             docker push gcr.io/${GOOGLE_PROJECT_ID}/nlp:${CIRCLE_SHA1}
+  push_to_gke:
+    machine: true
+    environment:
+      - GOOGLE_PROJECT_ID: "reflect-backend"
+    steps:
+      - checkout
       - run: 
           name: Deploy to Kubernetes
           command: |
             envsubst < ${HOME}/project/k8s_templated.yml > ${HOME}/k8s.yml
             kubectl apply -f ${HOME}/k8s.yml
-            kubectl rollout status deployment/${PROJECT_NAME}
+            kubectl rollout status deployment/nlp
+            kubectl rollout status deployment/ingress
 workflows:
   version: 2
   build_deploy:
     jobs:
-      - build
-      - push_to_gcr_gke:
+      - build_and_push
+      - push_to_gke:
           requires:
-            - build
+            - build_and_push
           filters:
             branches:
               only: master
