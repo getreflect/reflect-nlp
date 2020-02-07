@@ -18,6 +18,7 @@ jobs:
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
             gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+      - setup_remote_docker
       - run: 
           name: Build Ingress Docker Image
           command: |
@@ -32,7 +33,6 @@ jobs:
               --build-arg COMMIT_REF=${CIRCLE_SHA1} \
               --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
               -t gcr.io/${GOOGLE_PROJECT_ID}/nlp:${CIRCLE_SHA1} nlp
-      - setup_remote_docker
       - run: 
           name: Push Docker Images to GCR
           command: |
