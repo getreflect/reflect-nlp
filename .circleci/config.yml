@@ -39,12 +39,6 @@ jobs:
             gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://gcr.io
             docker push gcr.io/${GOOGLE_PROJECT_ID}/ingress:${CIRCLE_SHA1}
             docker push gcr.io/${GOOGLE_PROJECT_ID}/nlp:${CIRCLE_SHA1}
-  push_to_gke:
-    machine: true
-    environment:
-      - GOOGLE_PROJECT_ID: "reflect-backend"
-    steps:
-      - checkout
       - run: 
           name: Deploy to Kubernetes
           command: |
@@ -56,10 +50,7 @@ workflows:
   version: 2
   build_deploy:
     jobs:
-      - build_and_push
-      - push_to_gke:
-          requires:
-            - build_and_push
+      - build_and_push:
           filters:
             branches:
               only: master
