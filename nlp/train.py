@@ -116,5 +116,5 @@ detail_dict = {'TOKENIZER_VOCAB_SIZE': TOKENIZER_VOCAB_SIZE,
                'VALIDATION_SPLIT': VALIDATION_SPLIT,
                'TRAINED_AT': datetime.datetime.now()}
 
-with open("models/" + model_name + "/details.yaml", "w") as file:
+with open("models/" + model_name + "/details.yml", "w") as file:
     documents = yaml.dump(detail_dict, file)

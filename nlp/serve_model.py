@@ -42,7 +42,7 @@ class Model():
 
     def loadParams(self):
         # load saved parameters
-        with open(self.MODEL_DIR + 'details.yaml', 'r') as config:
+        with open(self.MODEL_DIR + 'details.yml', 'r') as config:
             return yaml.full_load(config)
 
     def pred(self, X: str):

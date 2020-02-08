@@ -33,7 +33,7 @@ Finally, enable some addons for minikube which allow us to configure the horizon
 
 To spin up the K8s cluster, start minikube then use kubectl to apply our config. 
 `minikube start`
-`kubectl apply -f k8s_local.yaml`
+`kubectl apply -f k8s_local.yml`
 To see if this is done successfully, run `kubectl get pods`. It should give you something that looks like the following.
 
 ```bash
@@ -96,7 +96,7 @@ Trained models are stored in the `models` folder. Each model is under its own fo
 ```python
 models
  | - acc%%.%% # where %%.%% represents accuracy on the test set
- |   | - details.yaml # stores training details
+ |   | - details.yml # stores training details
  |   | - model.json # stores model architectures
  |   | - tokenizer.json # stores tokenizer embeddings
  |   | - weights.h5 # stores weights for neural conenctions
