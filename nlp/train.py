@@ -23,10 +23,10 @@ import data_proc
 # -- Params --
 TOKENIZER_VOCAB_SIZE = 500
 SEQUENCE_MAX_LENGTH = 75
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 NUM_EPOCHS = 10
-TRAIN_TEST_SPLIT = 0.1
-VALIDATION_SPLIT = 0.1
+TRAIN_TEST_SPLIT = 0.25
+VALIDATION_SPLIT = 0.2
 TAIL_SIZE = 10
 
 # Load survey info
@@ -116,5 +116,5 @@ detail_dict = {'TOKENIZER_VOCAB_SIZE': TOKENIZER_VOCAB_SIZE,
                'VALIDATION_SPLIT': VALIDATION_SPLIT,
                'TRAINED_AT': datetime.datetime.now()}
 
-with open("models/" + model_name + "/details.yaml", "w") as file:
+with open("models/" + model_name + "/details.yml", "w") as file:
     documents = yaml.dump(detail_dict, file)
