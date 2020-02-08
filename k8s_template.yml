@@ -130,6 +130,8 @@ apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
   name: ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "web-static-ip"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
