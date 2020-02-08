@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     # acceptable flags -> -h, -i, -h, -t
     # full length flags -> --help, --intent, --model, --threshold
-    unixOptions = "hi:mt"
+    unixOptions = "hm:t:i:"
     gnuOptions = ["help", "intent=", "model", "threshold"]
 
     # string to print on -h or err
@@ -89,6 +89,7 @@ if __name__ == '__main__':
         print(errString)
         sys.exit(2)
     for opt, arg in opts:
+        print(opt, arg)
         if opt in ("-h", "--help"):
             print(errString)
             sys.exit(2)
