@@ -112,7 +112,7 @@ func getIP(r *http.Request) string {
 	return ip
 }
 
-// RateLimit is a middleware to
+// RateLimit is a middleware to prevent a single IP from performing too many reqs
 func RateLimit(req http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ip := getIP(r)
