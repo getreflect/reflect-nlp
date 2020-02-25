@@ -10,6 +10,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/jackyzha0/reflect-nlp/ingress/db"
 )
 
 const APIURL string = "http://nlp-service:30000"
@@ -21,6 +23,7 @@ type HealthStatus struct {
 
 type Intent struct {
 	Intent string `json:"intent" bson:"intent"`
+	URL string `json:"url" bson:"url"`
 }
 
 // Infer unpacks the intent and sends it downstream to inference
@@ -34,6 +37,12 @@ func Infer(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("Received non-JSON response body: %s", r.Body)
 		http.Error(w, "Received non-JSON response body: %s", http.StatusBadRequest)
 		return
+	}
+
+	// log attempt to cloud sql
+	err = db.LogIntent(intent.URL, intent.Intent)
+	if err != nil {
+		log.Errorf("Error saving intent to CloudSQL: %s", err.Error())
 	}
 
 	// proxy req to python server
@@ -58,6 +67,7 @@ func Infer(w http.ResponseWriter, r *http.Request) {
 	w.Write(bodyBytes)
 }
 
+// helper for checking downstream health
 func checkDownStreamHealth() bool {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
