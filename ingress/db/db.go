@@ -37,7 +37,7 @@ func LogIntent(url, intent string) error {
 
 func init() {
 	// uses Cloud SQL Proxy Docker image
-	db, _ = sql.Open("mysql", "root@tcp(localhost)/intents")
+	db, _ = sql.Open("mysql", "/intents")
 
 	// check connection
 	err := db.Ping()
