@@ -41,6 +41,13 @@ spec:
           - name: cloudsql-instance-credentials
             mountPath: /secrets/cloudsql
             readOnly: true
+      volumes:
+      - name: cloudsql-instance-credentials
+        secret:
+          secretName: cloudsql-instance-credentials
+      - name: cloudsql-db-credentials
+        secret:
+          secretName: cloudsql-db-credentials
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
