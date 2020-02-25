@@ -35,7 +35,7 @@ func Infer(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&intent)
 	if err != nil {
 		log.Errorf("Received non-JSON response body: %s", r.Body)
-		http.Error(w, "Received non-JSON response body: %s", http.StatusBadRequest)
+		http.Error(w, "Received non-JSON response body", http.StatusBadRequest)
 		return
 	}
 

@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -10,31 +9,38 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var db sql.DB
+// url, intent, date
+const InsertQuery string = "INSERT INTO intents VALUES(?, ?, ?)"
+
+var db *sql.DB
 
 // insert log entry to cloudsql db
 func LogIntent(url, intent string) error {
-	dt := time.Now().String()
-	qString := fmt.Sprintf("INSERT INTO intents VALUES(%s, %s, %s)", url, intent, dt)
-	log.Infof("Performing DB query: %s", qString)
+	dt := time.Now().Truncate(time.Minute).String()
 
-	insertOp, err := db.Query(qString)
-	defer insertOp.Close()
+	q, err := db.Prepare(InsertQuery)
+	defer q.Close()
+
+	if err != nil {
+		log.Warnf("Erroring logging intent: %s", err.Error())
+	}
+
+	log.Infof("Performing insert op")
+	_, err = q.Exec(url, intent, dt)
+
+	if err != nil {
+		log.Warnf("Erroring logging intent: %s", err.Error())
+	}
 
 	return err
 }
 
 func init() {
-	// private ip, nice try
-	db, err := sql.Open("mysql", "root@unix(/cloudsql/reflect-backend:us-central1:reflect-db)/intents")
-
-	// if there is an error opening the connection, handle it
-	if err != nil {
-		log.Fatalf("Fatal error %s", err.Error())
-	}
+	// uses Cloud SQL Proxy Docker image
+	db, _ = sql.Open("mysql", "root@tcp(localhost)/intents")
 
 	// check connection
-	err = db.Ping()
+	err := db.Ping()
 	if err != nil {
 		log.Fatalf("Fatal error %s", err.Error())
 	}
