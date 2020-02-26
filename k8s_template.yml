@@ -53,7 +53,6 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
-
 ---
 ### Ingress Service
 apiVersion: "v1"
@@ -161,3 +160,13 @@ spec:
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
+---
+### Actual Ingress
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: basic-ingress
+spec:
+  backend:
+    serviceName: ingress-service
+    servicePort: 80

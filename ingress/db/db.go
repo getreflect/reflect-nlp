@@ -81,7 +81,6 @@ func init() {
 			db = connectDB()
 		} else {
 			connected = true
-			log.Info("yeet")
 		}
 
 		time.Sleep(RetryTimeout)
