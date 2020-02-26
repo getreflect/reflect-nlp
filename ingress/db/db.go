@@ -35,13 +35,13 @@ func LogIntent(url, intent string) error {
 
 		if err != nil {
 			log.Warnf("Erroring logging intent: %s", err.Error())
-		}
+		} else {
+			log.Infof("Performing insert op")
+			_, err = q.Exec(url, intent, dt)
 
-		log.Infof("Performing insert op")
-		_, err = q.Exec(url, intent, dt)
-
-		if err != nil {
-			log.Warnf("Erroring logging intent: %s", err.Error())
+			if err != nil {
+				log.Warnf("Erroring logging intent: %s", err.Error())
+			}
 		}
 
 		return err
@@ -63,9 +63,31 @@ func connectDB() *sql.DB {
 	return db
 }
 
+func createTable() error {
+	ctx, cancel := context.WithTimeout(context.Background(), PingTimeout)
+	defer cancel()
+
+	// ping database
+	err := db.PingContext(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	connected = true
+
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS intents (url varchar(255), intent varchar(255), date varchar(255));")
+	return err
+}
+
 func init() {
 	connected = false
 	db = connectDB()
+	err := createTable()
+
+	if err != nil {
+		panic(err)
+	}
 
 	go func() {
 		for {
