@@ -77,6 +77,8 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: ingress-external
+  labels:
+    app: ingress
   annotations:
     kubernetes.io/ingress.global-static-ip-name: static-ip
 spec:
