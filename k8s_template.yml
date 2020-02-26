@@ -22,11 +22,32 @@ spec:
         app: ingress
     spec:
       containers:
+      ### Actual Ingress image
       - image: gcr.io/${GOOGLE_PROJECT_ID}/ingress:${CIRCLE_SHA1}
         name: ingress
         resources:
           requests:
             cpu: "250m"
+      ### CloudSQL Proxy (db connection)
+      - name: cloudsql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.16
+        command: ["/cloud_sql_proxy",
+                  "-instances=reflect-backend:us-central1:reflect-db=tcp:3306",
+                  "-credential_file=/secrets/cloudsql/key.json"]
+        securityContext:
+          runAsUser: 2
+          allowPrivilegeEscalation: false
+        volumeMounts:
+          - name: cloudsql-instance-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
+      volumes:
+      - name: cloudsql-instance-credentials
+        secret:
+          secretName: cloudsql-instance-credentials
+      - name: cloudsql-db-credentials
+        secret:
+          secretName: cloudsql-db-credentials
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
