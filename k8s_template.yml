@@ -22,32 +22,11 @@ spec:
         app: ingress
     spec:
       containers:
-      ### Actual Ingress image
       - image: gcr.io/${GOOGLE_PROJECT_ID}/ingress:${CIRCLE_SHA1}
         name: ingress
         resources:
           requests:
             cpu: "250m"
-      ### CloudSQL Proxy (db connection)
-      - name: cloudsql-proxy
-        image: gcr.io/cloudsql-docker/gce-proxy:1.16
-        command: ["/cloud_sql_proxy",
-                  "-instances=reflect-backend:us-central1:reflect-db=tcp:3306",
-                  "-credential_file=/secrets/cloudsql/key.json"]
-        securityContext:
-          runAsUser: 2
-          allowPrivilegeEscalation: false
-        volumeMounts:
-          - name: cloudsql-instance-credentials
-            mountPath: /secrets/cloudsql
-            readOnly: true
-      volumes:
-      - name: cloudsql-instance-credentials
-        secret:
-          secretName: cloudsql-instance-credentials
-      - name: cloudsql-db-credentials
-        secret:
-          secretName: cloudsql-db-credentials
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -56,35 +35,22 @@ spec:
 
 ---
 ### Ingress Service
-apiVersion: v1
-kind: Service
+apiVersion: "v1"
+kind: "Service"
 metadata:
-  name: ingress-service
+  name: "ingress-service"
+  namespace: "default"
   labels:
-    app: ingress
+    app: "ingress"
 spec:
-  type: NodePort
-  selector:
-    app: ingress
-    tier: web
   ports:
-  - port: 80
+  - protocol: "TCP"
+    port: 80
     targetPort: 8080
+  selector:
+    app: "ingress"
+  type: "LoadBalancer"
 
----
-### Actual Ingress
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: ingress-external
-  labels:
-    app: ingress
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: static-ip
-spec:
-  backend:
-    serviceName: ingress-service
-    servicePort: 80
 
 ---
 ### NLP Deployment
@@ -158,3 +124,19 @@ spec:
   minReplicas: 1
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
+---
+### Ingress HPA
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "static-ip"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ingress
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
