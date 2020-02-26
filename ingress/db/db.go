@@ -67,22 +67,24 @@ func init() {
 	connected = false
 	db = connectDB()
 
-	for {
-		ctx, cancel := context.WithTimeout(context.Background(), PingTimeout)
-		defer cancel()
+	go func() {
+		for {
+			ctx, cancel := context.WithTimeout(context.Background(), PingTimeout)
+			defer cancel()
 
-		// ping database
-		err := db.PingContext(ctx)
+			// ping database
+			err := db.PingContext(ctx)
 
-		// if no connection, set channel, log, and attempt to reconnect
-		if err != nil {
-			connected = false
-			log.Errorf("Connection broke: %s, attempting reconnect.", err.Error())
-			db = connectDB()
-		} else {
-			connected = true
+			// if no connection, set channel, log, and attempt to reconnect
+			if err != nil {
+				connected = false
+				log.Errorf("Connection broke: %s, attempting reconnect.", err.Error())
+				db = connectDB()
+			} else {
+				connected = true
+			}
+
+			time.Sleep(RetryTimeout)
 		}
-
-		time.Sleep(RetryTimeout)
-	}
+	}()
 }
