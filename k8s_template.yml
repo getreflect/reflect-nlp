@@ -55,6 +55,7 @@ spec:
       terminationGracePeriodSeconds: 30
 
 ---
+### Ingress Service
 apiVersion: v1
 kind: Service
 metadata:
@@ -67,7 +68,7 @@ spec:
     app: ingress
     tier: web
   ports:
-  - port: 8080
+  - port: 80
     targetPort: 8080
 
 ---
@@ -75,13 +76,13 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: ingress
+  name: ingress-external
   annotations:
     kubernetes.io/ingress.global-static-ip-name: static-ip
 spec:
   backend:
     serviceName: ingress-service
-    servicePort: 8080
+    servicePort: 80
 
 ---
 ### NLP Deployment
