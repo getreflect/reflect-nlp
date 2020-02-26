@@ -53,24 +53,35 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
----
-### Ingress Service
-apiVersion: "v1"
-kind: "Service"
-metadata:
-  name: "ingress-service"
-  namespace: "default"
-  labels:
-    app: "ingress"
-spec:
-  ports:
-  - protocol: "TCP"
-    port: 80
-    targetPort: 8080
-  selector:
-    app: "ingress"
-  type: "LoadBalancer"
 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-service
+  labels:
+    app: ingress
+spec:
+  type: NodePort
+  selector:
+    app: ingress
+    tier: web
+  ports:
+  - port: 8080
+    targetPort: 8080
+
+---
+### Actual Ingress
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: static-ip
+spec:
+  backend:
+    serviceName: ingress-service
+    servicePort: 8080
 
 ---
 ### NLP Deployment
@@ -144,29 +155,3 @@ spec:
   minReplicas: 1
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
----
-### Ingress HPA
-apiVersion: autoscaling/v1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: ingress
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: "web-static-ip"
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: ingress
-  minReplicas: 1
-  maxReplicas: 3
-  targetCPUUtilizationPercentage: 80
----
-### Actual Ingress
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: basic-ingress
-spec:
-  backend:
-    serviceName: ingress-service
-    servicePort: 80
