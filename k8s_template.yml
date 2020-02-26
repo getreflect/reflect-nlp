@@ -51,19 +51,22 @@ spec:
     targetPort: 8080
 
 ---
-### Actual Ingress
-apiVersion: extensions/v1beta1
-kind: Ingress
+### Ingress HPA
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
 metadata:
-  name: ingress-external
-  labels:
-    app: ingress
+  name: ingress
   annotations:
-    kubernetes.io/ingress.global-static-ip-name: static-ip
+    kubernetes.io/ingress.global-static-ip-name: "static-ip"
 spec:
-  backend:
-    serviceName: ingress-service
-    servicePort: 80
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ingress
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
 
 ---
 ### NLP Deployment
@@ -137,19 +140,3 @@ spec:
   minReplicas: 1
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
----
-### Ingress HPA
-apiVersion: autoscaling/v1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: ingress
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: "static-ip"
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: ingress
-  minReplicas: 1
-  maxReplicas: 3
-  targetCPUUtilizationPercentage: 80
