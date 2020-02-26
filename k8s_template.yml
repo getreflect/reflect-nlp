@@ -35,20 +35,21 @@ spec:
 
 ---
 ### Ingress Service
-apiVersion: v1
-kind: Service
+apiVersion: "v1"
+kind: "Service"
 metadata:
-  name: ingress-service
+  name: "ingress-service"
+  namespace: "default"
   labels:
-    app: ingress
+    app: "ingress"
 spec:
-  type: NodePort
-  selector:
-    app: ingress
-    tier: web
   ports:
-  - port: 80
+  - protocol: "TCP"
+    port: 80
     targetPort: 8080
+  selector:
+    app: "ingress"
+  type: "LoadBalancer"
 
 ---
 ### Ingress HPA
