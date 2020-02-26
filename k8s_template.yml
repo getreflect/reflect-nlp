@@ -35,22 +35,35 @@ spec:
 
 ---
 ### Ingress Service
-apiVersion: "v1"
-kind: "Service"
+apiVersion: v1
+kind: Service
 metadata:
-  name: "ingress-service"
-  namespace: "default"
+  name: ingress-service
   labels:
-    app: "ingress"
+    app: ingress
 spec:
-  ports:
-  - protocol: "TCP"
-    port: 80
-    targetPort: 8080
+  type: NodePort
   selector:
-    app: "ingress"
-  type: "LoadBalancer"
+    app: ingress
+    tier: web
+  ports:
+  - port: 80
+    targetPort: 8080
 
+---
+### Actual Ingress
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-external
+  labels:
+    app: ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: static-ip
+spec:
+  backend:
+    serviceName: ingress-service
+    servicePort: 80
 
 ---
 ### NLP Deployment
