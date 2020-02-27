@@ -26,7 +26,7 @@ const RetryTimeout time.Duration = 10 * time.Second
 // PingTimeout is the time to wait before cancelling database ping context
 const PingTimeout time.Duration = 3 * time.Second
 // DevEnv toggles between SQL addresses for local or prod development
-const DevEnv = true
+const DevEnv = false
 
 type Intent struct {
 	Url string
