@@ -2,7 +2,9 @@
 package routes
 
 import (
+	"bytes"
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -14,19 +16,47 @@ import (
 	"github.com/jackyzha0/reflect-nlp/ingress/db"
 )
 
+// APIURL is the address for the nlp service
 const APIURL string = "http://nlp-service:30000"
 
+// HealthStatus represents health of ingress (this) and nlp service
 type HealthStatus struct {
 	ProxyAlive bool `json:"proxyAlive"`
 	ModelAlive bool `json:"modelAlive"`
 }
 
+// Intent represents a single user intent
 type Intent struct {
 	Intent string `json:"intent" bson:"intent"`
-	URL string `json:"url" bson:"url"`
+	URL    string `json:"url" bson:"url"`
 }
 
-// Infer unpacks the intent and sends it downstream to inference
+// Export returns all intents as a CSV
+func Export(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.FetchIntents()
+
+	if err != nil {
+		log.Warnf("Error exporting intents to CSV: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	b := &bytes.Buffer{}
+	wr := csv.NewWriter(b)
+
+	for _, intent := range rows {
+		record := []string{intent.Url, intent.Intent, intent.Time}
+		wr.Write(record)
+	}
+
+	wr.Flush()
+
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment;filename=intents.csv")
+	w.Write(b.Bytes())
+}
+
+// Infer unpacks the intent and sends it downstream for inference
 func Infer(w http.ResponseWriter, r *http.Request) {
 	// check if json
 	decoder := json.NewDecoder(r.Body)

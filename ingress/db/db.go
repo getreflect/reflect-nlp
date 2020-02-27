@@ -8,24 +8,56 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	// import mysql driver
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// url, intent, date
+// InsertQuery is a prepared SQL query of form url, intent, date
 const InsertQuery string = "INSERT INTO intents VALUES(?, ?, ?)"
 
 var db *sql.DB
 
-// connection is down
 var connected bool
+// ErrNotConnected should be thrown when there is no established connection to the database
+var ErrNotConnected error = errors.New("No connection to database")
 
-var NotConnected error = errors.New("No connection to database")
-
+// RetryTimeout is the time to wait before reattempting database connection
 const RetryTimeout time.Duration = 10 * time.Second
+// PingTimeout is the time to wait before cancelling database ping context
 const PingTimeout time.Duration = 3 * time.Second
+// DevEnv toggles between SQL addresses for local or prod development
 const DevEnv = false
 
-// insert log entry to cloudsql db
+type Intent struct {
+	Url string
+	Intent string
+	Time string
+}
+
+// FetchIntents returns a query containing all intents
+func FetchIntents() ([]Intent, error) {
+	if connected {
+		rows, err := db.Query("SELECT * FROM intents")
+		defer rows.Close()
+
+		intents := []Intent{}
+
+		for rows.Next() {
+			i := Intent{}
+			if err := rows.Scan(&i.Url, &i.Intent, &i.Time); err != nil {
+				log.Fatal(err)
+			} else {
+				intents = append(intents, i)
+			}
+		}
+
+		return intents, err
+	}
+
+	return nil, ErrNotConnected
+}
+
+// LogIntent inserts log entry into cloudsql db
 func LogIntent(url, intent string) error {
 	if connected {
 		dt := time.Now().Truncate(time.Minute).String()
@@ -46,8 +78,7 @@ func LogIntent(url, intent string) error {
 
 		return err
 	}
-
-	return NotConnected
+	return ErrNotConnected
 }
 
 func connectDB() *sql.DB {
