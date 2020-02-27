@@ -36,7 +36,8 @@ func main() {
 
 	// Define Mux Router
 	r := mux.NewRouter()
-	r.HandleFunc("/api", middleware.RateLimit(routes.Infer)).Methods("POST")
+	r.HandleFunc("/api", routes.Infer).Methods("POST")
+	r.HandleFunc("/export", middleware.RateLimit(routes.Export)).Methods("GET")
 	r.HandleFunc("/healthcheck", middleware.RateLimit(routes.Health))
 	http.Handle("/", r)
 

@@ -23,7 +23,7 @@ const MapRefreshRate time.Duration = 1 * time.Minute
 const AvgTokenRate rate.Limit = 1
 
 // MaxTokenRate is the limit of spike token consumption
-const MaxTokenRate int = 2
+const MaxTokenRate int = 1
 
 // User holds the rate limiter for each visitor and the last time that the visitor was seen.
 type User struct {
@@ -101,11 +101,9 @@ func cleanupVisitors() {
 	}
 }
 
+// find real ip instead of using ingress IP
 func getIP(r *http.Request) string {
-	ip := r.Header.Get("X-REAL-IP")
-	if ip == "" {
-		ip = r.Header.Get("X-FORWARDED-FOR")
-	}
+	ip := r.Header.Get("X-FORWARDED-FOR")
 	if ip == "" {
 		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
 	}
