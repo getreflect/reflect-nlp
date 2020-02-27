@@ -1,16 +1,17 @@
 # reflect-nlp
 
-[![CircleCI](https://circleci.com/gh/jackyzha0/reflect-nlp.svg?style=svg)](https://circleci.com/gh/jackyzha0/reflect-nlp)
+[![CircleCI](https://circleci.com/gh/jackyzha0/reflect-nlp.svg?style=svg)](https://circleci.com/gh/jackyzha0/reflect-nlp) [![](http://godoc.org/github.com/jackyzha0/reflect-nlp/ingress?status.svg)](http://godoc.org/github.com/jackyzha0/reflect-nlp/ingress) [![Go Report Card](https://goreportcard.com/badge/github.com/jackyzha0/reflect-nlp)](https://goreportcard.com/report/github.com/jackyzha0/reflect-nlp)
 
-The backend of reflect which determines intent validity and does stats collection. <br>
+The backend of reflect which determines intent validity and does stats collection.
 [the main repo.](https://github.com/jackyzha0/reflect-chrome)
 
 
-![Our K8s cluster explained](readme_sources/diagram.png)
+![K8s cluster](readme_sources/diagram.png)
 
 Anything related to the ingress controller can be found in `/ingress`. All the NLP stuff can be found in `/nlp`.
 
-### Docker build instructions
+### Local Docker build instructions
+Note: There is no need to do this when deploying as the Docker images will be rebuilt by `CircleCi`.
 1. Build ingress proxy image: `docker build -t jzhao2k19/reflect-nlp-ingress:latest ingress`
 2. Build NLP model image: `docker build -t jzhao2k19/reflect-nlp:latest nlp`
 3. Push both Docker Images to Docker Hub
@@ -39,11 +40,11 @@ To see if this is done successfully, run `kubectl get pods`. It should give you 
 ```bash
 ➜ kubectl get pods
 NAME                           READY   STATUS    RESTARTS   AGE
-ingress-54f9b89fc4-nxl47       1/1     Running   0          5m
+ingress-54f9b89fc4-nxl47       2/2     Running   0          5m
 nlp-5f77b4946-vs4l2            1/1     Running   0          5m
 ```
 
-Wait a few minutes for the LoadBalancer to be assigned an external IP address, then run `kubectl get svc` to list running services.
+Note that `ingress` has `2/2` pods as there is a CloudSQL sidecar. Wait a few minutes for the LoadBalancer to be assigned an external IP address, then run `kubectl get svc` to list running services.
 
 ```bash
 ➜ kubectl get svc
@@ -72,6 +73,9 @@ To test if everything is healthy, run `minikube service ingress-service` which w
 	"modelAlive": true
 }
 ```
+
+### Exporting intents
+Local logged intents can be exported as a CSV by hitting `/export`. This endpoint is rate-limited.
 
 ### Running the NLP Model
 This project depends on a bunch of Python libraries. Install them by doing `pip install sklearn keras pandas numpy matplotlib` <br>
