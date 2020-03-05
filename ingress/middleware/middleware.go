@@ -1,5 +1,4 @@
-// Package middleware defines possible middleware
-// that can be used by the router.
+// Package middleware defines possible middleware that can be used by the router.
 package middleware
 
 import (

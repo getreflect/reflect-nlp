@@ -5,7 +5,6 @@
 The backend of reflect which determines intent validity and does stats collection.
 [the main repo.](https://github.com/jackyzha0/reflect-chrome)
 
-
 ![K8s cluster](readme_sources/diagram.png)
 
 Anything related to the ingress controller can be found in `/ingress`. All the NLP stuff can be found in `/nlp`.
@@ -106,6 +105,10 @@ models
  |   | - weights.h5 # stores weights for neural conenctions
  | ...
 ```
+
+### Exporting the NLP Model for use in TensorflowJS
+
+I've written a really short script utilizing Tensorflow's `tensorflowjs_converter` to convert the Keras model to a TensorflowJS compatible one. You can call it by running `./nlp/convert_to_js_model.sh <name_of_model>`, which will give you the converted model in `nlp/converted_models`
 
 ### NLP Model CLI
 

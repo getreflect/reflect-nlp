@@ -1,3 +1,4 @@
+// Package db encapsulates all database connections and operations
 package db
 
 import (
