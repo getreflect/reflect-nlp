@@ -20,14 +20,12 @@ from sklearn.preprocessing import LabelEncoder
 import net
 import data_proc
 
-# -- Params --
-TOKENIZER_VOCAB_SIZE = 500
-SEQUENCE_MAX_LENGTH = 75
-BATCH_SIZE = 64
-NUM_EPOCHS = 10
-TRAIN_TEST_SPLIT = 0.25
-VALIDATION_SPLIT = 0.2
-TAIL_SIZE = 10
+# -- Parse config.yaml Parameters --
+try: 
+    with open ("config.yaml", 'r') as file:
+    config = yaml.safe_load(file)
+except Exception as e:
+    print('Error reading the config file')
 
 # Load survey info
 print('Loading Dataframe')
@@ -53,38 +51,38 @@ Y = Y.reshape(-1, 1)
 
 # Train/Test split, 15% test set
 X_train, X_test, Y_train, Y_test = train_test_split(
-    X, Y, test_size=TRAIN_TEST_SPLIT)
+    X, Y, test_size=config['TRAIN_TEST_SPLIT'])
 
 # Data processing
-tokenizer = Tokenizer(num_words=TOKENIZER_VOCAB_SIZE)
+tokenizer = Tokenizer(num_words=config['TOKENIZER_VOCAB_SIZE'])
 tokenizer.fit_on_texts(X_train)
 seqs = tokenizer.texts_to_sequences(X_train)
 padded_seqs = sequence.pad_sequences(
-    seqs, maxlen=SEQUENCE_MAX_LENGTH)
+    seqs, maxlen=config['SEQUENCE_MAX_LENGTH'])
 
 # Load Network Architecture
-model = net.RNN(SEQUENCE_MAX_LENGTH, TOKENIZER_VOCAB_SIZE)
+model = net.RNN(config['SEQUENCE_MAX_LENGTH'], config['TOKENIZER_VOCAB_SIZE'])
 model.summary()
 model.compile(loss='binary_crossentropy',
               optimizer=RMSprop(), metrics=['accuracy'])
 
 # Model Training
-model.fit(padded_seqs, Y_train, batch_size=BATCH_SIZE, epochs=NUM_EPOCHS,
-          validation_split=VALIDATION_SPLIT, callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.000001, patience=3)])
+model.fit(padded_seqs, Y_train, batch_size=config['BATCH_SIZE'], epochs=config['NUM_EPOCHS'],
+          validation_split=config['VALIDATION_SPLIT'], callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.000001, patience=3)])
 
 # Run model on test set
 test_seqs = tokenizer.texts_to_sequences(X_test)
 padded_test_seqs = sequence.pad_sequences(
-    test_seqs, maxlen=SEQUENCE_MAX_LENGTH)
+    test_seqs, maxlen=config['SEQUENCE_MAX_LENGTH'])
 accr = model.evaluate(padded_test_seqs, Y_test)
 print('Test set\n  Loss: {:0.3f}\n  Accuracy: {:0.3f}'.format(
     accr[0], accr[1]))
 
 # Print some example classifications from intent list
-seq = tokenizer.texts_to_sequences(df.intent.tail(TAIL_SIZE))
-padded_seq = sequence.pad_sequences(seq, maxlen=SEQUENCE_MAX_LENGTH)
+seq = tokenizer.texts_to_sequences(df.intent.tail(config['TAIL_SIZE']))
+padded_seq = sequence.pad_sequences(seq, maxlen=config['SEQUENCE_MAX_LENGTH'])
 preds = model.predict(padded_seq)
-out = list(zip(df.intent.tail(TAIL_SIZE), df.valid.tail(TAIL_SIZE), preds))
+out = list(zip(df.intent.tail(config['TAIL_SIZE']), df.valid.tail(config['TAIL_SIZE']), preds))
 for obs in out:
     print('Intent: %s   Actual Class: %s   Predicted Class: %s' %
           (obs[0], obs[1], "yes" if obs[2][0] > 0.5 else "no"))
@@ -108,12 +106,12 @@ with open("models/" + model_name + "/tokenizer.json", 'w', encoding='utf-8') as 
     file.write(json.dumps(tokenizer_json, ensure_ascii=False))
 
 # write training details to YAML
-detail_dict = {'TOKENIZER_VOCAB_SIZE': TOKENIZER_VOCAB_SIZE,
-               'SEQUENCE_MAX_LENGTH': SEQUENCE_MAX_LENGTH,
-               'BATCH_SIZE': BATCH_SIZE,
-               'NUM_EPOCHS': NUM_EPOCHS,
-               'TRAIN_TEST_SPLIT': TRAIN_TEST_SPLIT,
-               'VALIDATION_SPLIT': VALIDATION_SPLIT,
+detail_dict = {'TOKENIZER_VOCAB_SIZE': config['TOKENIZER_VOCAB_SIZE'],
+               'SEQUENCE_MAX_LENGTH': config['SEQUENCE_MAX_LENGTH'],
+               'BATCH_SIZE': config['BATCH_SIZE'],
+               'NUM_EPOCHS': config['NUM_EPOCHS'],
+               'TRAIN_TEST_SPLIT': config['TRAIN_TEST_SPLIT'],
+               'VALIDATION_SPLIT': config['VALIDATION_SPLIT'],
                'TRAINED_AT': datetime.datetime.now()}
 
 with open("models/" + model_name + "/details.yml", "w") as file:
