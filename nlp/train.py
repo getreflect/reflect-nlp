@@ -23,7 +23,7 @@ import data_proc
 # -- Parse config.yaml Parameters --
 try: 
     with open ("config.yaml", 'r') as file:
-    config = yaml.safe_load(file)
+        config = yaml.safe_load(file)
 except Exception as e:
     print('Error reading the config file')
 
