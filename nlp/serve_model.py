@@ -10,7 +10,6 @@ from keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.text import tokenizer_from_json
 from tensorflow.keras.models import model_from_json  # fix threads crash
 
-
 class Model():
 
     def __init__(self, model_name: str, threshold: int):
@@ -70,7 +69,7 @@ if __name__ == '__main__':
     argv = sys.argv[1:]
 
     # define default parameters
-    model = 'acc81.08'
+    model = 'acc88.04'
     threshold = 0.5
     intent = 'need to do some work'
 

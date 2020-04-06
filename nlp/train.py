@@ -29,8 +29,8 @@ except Exception as e:
 
 # Load survey info
 print('Loading Dataframe')
-df = pd.read_csv('data/survey.csv', sep="\t",
-                 header=None, names=["intent", "valid"])
+df = pd.read_csv('data/mar_cumulative.csv', sep="\t",
+                 header=None, names=["url", "intent", "valid", "date"])
 
 # Clean text
 df['intent'] = df.intent.apply(data_proc.stripPunctuation)
