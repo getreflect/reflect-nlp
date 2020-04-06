@@ -69,7 +69,7 @@ if __name__ == '__main__':
     argv = sys.argv[1:]
 
     # define default parameters
-    model = 'acc88.04'
+    model = 'acc84.78'
     threshold = 0.5
     intent = 'need to do some work'
 
