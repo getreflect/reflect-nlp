@@ -29,8 +29,10 @@ except Exception as e:
 
 # Load survey info
 print('Loading Dataframe')
-df = pd.read_csv('data/mar_cumulative.csv', sep="\t",
-                 header=None, names=["url", "intent", "valid", "date"])
+df = pd.read_csv('data/survey.csv', sep="\t",
+                  header=None, names=["intent", "valid"])
+# df = pd.read_csv('data/mar_cumulative.csv', sep="\t",
+#                  header=None, names=["url", "intent", "valid", "date"])
 
 # Clean text
 df['intent'] = df.intent.apply(data_proc.stripPunctuation)
@@ -92,7 +94,7 @@ model_name = "acc%.2f" % (accr[1] * 100)
 os.mkdir('models/' + model_name)
 
 # save weights as HDF5
-model.save_weights("models/" + model_name + "/weights.h5")
+model.save("models/" + model_name + "/weights.h5")
 print("Saved model to disk")
 
 # save model as JSON
@@ -103,7 +105,7 @@ with open("models/" + model_name + "/model.json", "w") as file:
 # save tokenizer as JSON
 tokenizer_json = tokenizer.to_json()
 with open("models/" + model_name + "/tokenizer.json", 'w', encoding='utf-8') as file:
-    file.write(json.dumps(tokenizer_json, ensure_ascii=False))
+    file.write(json.dumps(tokenizer_json, ensure_ascii=True))
 
 # write training details to YAML
 detail_dict = {'TOKENIZER_VOCAB_SIZE': config['TOKENIZER_VOCAB_SIZE'],
