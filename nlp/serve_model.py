@@ -57,6 +57,8 @@ class Model():
         padded_seq = sequence.pad_sequences(
             seq, maxlen=self.params["SEQUENCE_MAX_LENGTH"])
 
+        print(padded_seq)
+
         # predict
         preds = self.loaded_model.predict(padded_seq)[0][0]
 
