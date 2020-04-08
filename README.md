@@ -107,6 +107,9 @@ models
  | ...
 ```
 
+### Converting models for use in `tensorflow.js`
+Tensorflow.js requires a different format for saved models. We can convert these using the `tensorflowjs_converter` tool. Run `./convert_to_js.sh <name_of_model>` to convert said model into a tensorflow.js usable format. You can find the output in `nlp/converted_models`.
+
 ### NLP Model CLI
 
 You can also run the NLP model through the command line (given the model exists) by just providing arguments to `serve_model.py`. Example usage is as follows,

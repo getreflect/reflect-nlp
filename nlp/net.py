@@ -9,10 +9,9 @@ from keras.models import Model
 # Define RNN Architecture
 def RNN(max_seq_len, vocab_size):
     inputs = Input(name='inputs', shape=[max_seq_len])
-    layer = Embedding(vocab_size, 50, input_length=max_seq_len)(inputs)
+    layer = Embedding(vocab_size, 64, input_length=max_seq_len)(inputs)
     layer = LSTM(64)(layer)
     layer = Dense(256, name='FC1')(layer)
-    layer = Activation('relu')(layer)
     layer = Dropout(0.5)(layer)
     layer = Dense(1, name='out_layer')(layer)
     layer = Activation('sigmoid')(layer)

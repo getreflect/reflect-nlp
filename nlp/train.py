@@ -29,8 +29,14 @@ except Exception as e:
 
 # Load survey info
 print('Loading Dataframe')
-df = pd.read_csv('data/survey.csv', sep="\t",
-                 header=None, names=["intent", "valid"])
+# df = pd.read_csv('data/survey.csv', sep="\t",
+#                   header=None, names=["intent", "valid"])
+df = pd.read_csv('data/mar_cumulative.csv')
+
+# # Cast intent col to string
+df['intent'] = df.intent.apply(str)
+
+print(df.head)
 
 # Clean text
 df['intent'] = df.intent.apply(data_proc.stripPunctuation)
@@ -68,15 +74,15 @@ model.compile(loss='binary_crossentropy',
 
 # Model Training
 model.fit(padded_seqs, Y_train, batch_size=config['BATCH_SIZE'], epochs=config['NUM_EPOCHS'],
-          validation_split=config['VALIDATION_SPLIT'], callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.000001, patience=3)])
+          validation_split=config['VALIDATION_SPLIT'], callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.000001, patience=2)])
 
 # Run model on test set
 test_seqs = tokenizer.texts_to_sequences(X_test)
 padded_test_seqs = sequence.pad_sequences(
     test_seqs, maxlen=config['SEQUENCE_MAX_LENGTH'])
 accr = model.evaluate(padded_test_seqs, Y_test)
-print('Test set\n  Loss: {:0.3f}\n  Accuracy: {:0.3f}'.format(
-    accr[0], accr[1]))
+print('Test set\n  Loss: {:0.4f}\n  Accuracy: {:0.2f}'.format(
+    accr[0], accr[1]*100))
 
 # Print some example classifications from intent list
 seq = tokenizer.texts_to_sequences(df.intent.tail(config['TAIL_SIZE']))
@@ -92,7 +98,7 @@ model_name = "acc%.2f" % (accr[1] * 100)
 os.mkdir('models/' + model_name)
 
 # save weights as HDF5
-model.save_weights("models/" + model_name + "/weights.h5")
+model.save("models/" + model_name + "/weights.h5")
 print("Saved model to disk")
 
 # save model as JSON
@@ -103,7 +109,7 @@ with open("models/" + model_name + "/model.json", "w") as file:
 # save tokenizer as JSON
 tokenizer_json = tokenizer.to_json()
 with open("models/" + model_name + "/tokenizer.json", 'w', encoding='utf-8') as file:
-    file.write(json.dumps(tokenizer_json, ensure_ascii=False))
+    file.write(json.dumps(tokenizer_json, ensure_ascii=True))
 
 # write training details to YAML
 detail_dict = {'TOKENIZER_VOCAB_SIZE': config['TOKENIZER_VOCAB_SIZE'],
