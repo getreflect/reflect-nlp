@@ -60,7 +60,7 @@ print('-- Some sample intents --')
 print(X.tail(5))
 
 # Data processing
-tokenizer = Tokenizer(num_words=config['TOKENIZER_VOCAB_SIZE'])
+tokenizer = Tokenizer(num_words=config['TOKENIZER_VOCAB_SIZE'], oov_token = 0)
 tokenizer.fit_on_texts(X_train)
 seqs = tokenizer.texts_to_sequences(X_train)
 padded_seqs = sequence.pad_sequences(
