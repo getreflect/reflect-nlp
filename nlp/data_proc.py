@@ -2,17 +2,17 @@ import string
 import random
 from nltk.corpus import wordnet
 
-# remove I, I'm from start
-def rmPersonalPrefix(s):
-	s = remove_prefix(s, "im ")
-	s = remove_prefix(s, "i ")
-	return s
+stop_words = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'd', 'll', 'm', 'o', 're', 've', 'y', 'ain', 'aren', 'couldn', 'didn', 'doesn', 'hadn', 'hasn', 'haven', 'isn', 'ma', 'mightn', 'mustn', 'needn', 'shan', 'shouldn', 'wasn', 'weren', 'won', 'wouldn']
 
-# remove prefix from string
-def remove_prefix(text, prefix):
-    if text.startswith(prefix):
-        return text[len(prefix):]
-    return text
+contractions = {
+	"im": "i am",
+	"ill": "i will",
+	"dont": "do not",
+	"havent": "have not",
+	"doesnt": "does not",
+	"he'll": "he will",
+	"she'll": "she will"	
+}
 
 # remove punctuation from string
 def stripPunctuation(s):
@@ -24,9 +24,6 @@ def stripPunctuation(s):
 # to lower
 def stripCaps(s):
 	return s.lower()
-
-# remove stop words
-stop_words = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'd', 'll', 'm', 'o', 're', 've', 'y', 'ain', 'aren', 'couldn', 'didn', 'doesn', 'hadn', 'hasn', 'haven', 'isn', 'ma', 'mightn', 'mustn', 'needn', 'shan', 'shouldn', 'wasn', 'weren', 'won', 'wouldn']
 
 def stripStopWords(s):
 	a = s.split(" ")
@@ -57,7 +54,7 @@ def synonyms(word, top_k):
 				synonyms.append((l.name(), similarity))
 	return list(synonyms)[:top_k]
 
-def getVariations(sentence, num, mutationprob = 0.25, insertionprob = 0.25, deletionprob = 0.25):
+def getVariations(sentence, num, mutationprob = 0.25):
 	res = set()
 	for n in range(num):
 		words = sentence.split(" ")
@@ -67,18 +64,41 @@ def getVariations(sentence, num, mutationprob = 0.25, insertionprob = 0.25, dele
 				synsets = synonyms(words[i], 3)
 				if not synsets:
 					continue
-				words[i] = random.choice(synsets)[0]
+				synset = random.choice(synsets)[0]
+				words[i] = synset.replace("_", " ")
 
 		res.add(" ".join(words))
 	return list(res)
 
-def negation():
-	pass
+def expanContractions(sentence):
+	words = sentence.split(" ")
 
-def randShuffle():
-	pass
+	res = ""
+	for w in words:
+		if w in contractions:
+			res += contractions[w]
+		else:
+			res += w
+		res += " "
+	return res[:-1]
+
+# call after expanding contractions
+# lower case, and stopword removal
+def negation(sentence):
+	if "not" in sentence:
+		sentence = setence.replace("not", "")
+		return sentence.replace("  ", " ")
+
+	return "not " + sentence
+
+def randShuffle(sentence):
+	w = sentence.split(" ")
+	random.shuffle(w)
+	return " ".join(w)
 
 def literalGarbage():
 	pass
 
-print(getVariations("jumped over the cat", 3))
+print(getVariations("trying to do some marketing work for my job", 3))
+print(stripStopWords(expanContractions("im gonna go and dont do work")))
+print(randShuffle("sometimes i dont feel so good mr stark"))
