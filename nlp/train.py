@@ -37,14 +37,10 @@ df = pd.read_csv('data/mar_cumulative.csv')
 # # Cast intent col to string
 df['intent'] = df.intent.apply(str)
 
-print(df.head)
-
 # Clean text
 df['intent'] = df.intent.apply(data_proc.stripPunctuation)
 df['intent'] = df.intent.apply(data_proc.stripCaps)
 df['intent'] = df.intent.apply(data_proc.rmPersonalPrefix)
-print('-- Some sample intents --')
-print(df.intent.tail(5))
 
 # create X (input) and Y (expected)
 X = df.intent
@@ -60,6 +56,9 @@ Y = Y.reshape(-1, 1)
 X_train, X_test, Y_train, Y_test = train_test_split(
     X, Y, test_size=config['TRAIN_TEST_SPLIT'])
 
+print('-- Some sample intents --')
+print(X.tail(5))
+
 # Data processing
 tokenizer = Tokenizer(num_words=config['TOKENIZER_VOCAB_SIZE'])
 tokenizer.fit_on_texts(X_train)
@@ -74,6 +73,8 @@ model.compile(loss='binary_crossentropy',
               optimizer=RMSprop(), metrics=['accuracy'])
 
 # Model Training
+print(padded_seqs.shape)
+print(Y_train.shape)
 model.fit(padded_seqs, Y_train, batch_size=config['BATCH_SIZE'], epochs=config['NUM_EPOCHS'],
           validation_split=config['VALIDATION_SPLIT'], callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.000001, patience=2)])
 

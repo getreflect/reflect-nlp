@@ -1,4 +1,4 @@
-PUNC_CHARS = "!\"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~"
+import string
 
 # remove I, I'm from start
 def rmPersonalPrefix(s):
@@ -14,9 +14,9 @@ def remove_prefix(text, prefix):
 
 # remove punctuation from string
 def stripPunctuation(s):
-	for c in PUNC_CHARS:
+	for c in string.punctuation:
 		s = s.replace(c, "")
-	s = s.replace("/", " ")
+	print(s)
 	return s
 
 # to lower
