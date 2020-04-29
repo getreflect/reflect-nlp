@@ -86,7 +86,7 @@ def expanContractions(sentence):
 # lower case, and stopword removal
 def negation(sentence):
 	if "not" in sentence:
-		sentence = setence.replace("not", "")
+		sentence = sentence.replace("not", "", 1) # only one replace
 		return sentence.replace("  ", " ")
 
 	return "not " + sentence
@@ -100,5 +100,6 @@ def literalGarbage():
 	pass
 
 print(getVariations("trying to do some marketing work for my job", 3))
-print(stripStopWords(expanContractions("im gonna go and dont do work")))
 print(randShuffle("sometimes i dont feel so good mr stark"))
+print(stripStopWords(expanContractions("im gonna go and dont do work")))
+print(negation(stripStopWords(expanContractions("im gonna go and dont do work"))))
