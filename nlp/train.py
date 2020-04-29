@@ -39,7 +39,38 @@ df['intent'] = df.intent.apply(str)
 # Clean text
 df['intent'] = df.intent.apply(data_proc.stripPunctuation)
 df['intent'] = df.intent.apply(data_proc.stripCaps)
+df['intent'] = df.intent.apply(data_proc.expandContractions)
 df['intent'] = df.intent.apply(data_proc.stripStopWords)
+
+### Data Augmentation
+aug_config = config['AUG']
+
+# sentence variations
+sentence_var_config = aug_config['SENTENCE_VAR']
+delta = []
+for row in df.sample(sentence_var_config['TOTAL_VARS']).iterrows():
+  intent = row[1]["intent"]
+  valid = row[1]["valid"]
+  variations = data_proc.getVariations(intent, sentence_var_config['VARS_PER'], sentence_var_config['MUTATION_PROB'])
+  delta += [[v, valid] for v in variations]
+
+
+# sentence negations (only on df yes cols)
+sentence_neg_config = aug_config['SENTENCE_NEG']
+for row in df[df.valid == "yes"].sample(sentence_neg_config['TOTAL_NEGS']).iterrows():
+  intent = row[1]["intent"]
+  neg = data_proc.negation(intent)
+  delta += [[neg, "no"]]
+
+# shuffled sentences
+# literal garbage sentences
+# vocab garbage sentences
+
+appendDF = pd.DataFrame(delta, columns = ['intent', 'valid'])
+print(appendDF)
+# df.append(appendDF)
+
+# print(data_proc.vocabGarbage(3, 50, tokenizer.word_counts))
 
 # create X (input) and Y (expected)
 X = df.intent
@@ -48,7 +79,6 @@ Y = df.valid
 # make tokenizer
 tokenizer = Tokenizer(num_words=config['TOKENIZER_VOCAB_SIZE'], oov_token = "<OOV>")
 tokenizer.fit_on_texts(X)
-print(data_proc.vocabGarbage(3, 50, tokenizer.word_counts))
 
 # create new Label encoder
 labelEncoder = LabelEncoder()

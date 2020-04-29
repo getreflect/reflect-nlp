@@ -30,6 +30,16 @@ def stripStopWords(s):
 	a = s.split(" ")
 	return " ".join([w for w in a if w not in stop_words])
 
+def expandContractions(sentence):
+	words = sentence.split(" ")
+	res = []
+	for w in words:
+		if w in contractions:
+			res.append(contractions[w])
+		else:
+			res.append(w)
+	return " ".join(res)
+
 # stem words (maybe)
 
 # augmentation
@@ -71,17 +81,6 @@ def getVariations(sentence, num, mutationprob = 0.25):
 		res.add(" ".join(words))
 	return list(res)
 
-def expandContractions(sentence):
-	words = sentence.split(" ")
-
-	res = []
-	for w in words:
-		if w in contractions:
-			res.append(contractions[w])
-		else:
-			res.append(w)
-	return " ".join(res)
-
 # call after expanding contractions
 # lower case, and stopword removal
 def negation(sentence):
@@ -100,7 +99,6 @@ def literalGarbage(n):
 	return " ".join(random.sample(words.words(), n))
 
 def vocabGarbage(n, topk, word_counts):
-	print(type(word_counts))
 	heap = [(-value, key) for key, value in word_counts.items()]
 	largest = heapq.nsmallest(topk, heap)
 	largest = [(key, -value) for value, key in largest]

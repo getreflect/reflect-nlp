@@ -5,3 +5,13 @@ NUM_EPOCHS: 15
 TRAIN_TEST_SPLIT: 0.25
 VALIDATION_SPLIT: 0.1
 TAIL_SIZE: 10
+
+# augmentation
+## sentence variations
+AUG:
+  SENTENCE_VAR:
+    TOTAL_VARS: 0
+    VARS_PER: 3
+    MUTATION_PROB: 0.1
+  SENTENCE_NEG:
+    TOTAL_NEGS: 20
