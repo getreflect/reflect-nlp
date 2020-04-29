@@ -42,35 +42,53 @@ df['intent'] = df.intent.apply(data_proc.stripCaps)
 df['intent'] = df.intent.apply(data_proc.expandContractions)
 df['intent'] = df.intent.apply(data_proc.stripStopWords)
 
+print("df size before augmentation: %d" % len(df.index))
+
 ### Data Augmentation
 aug_config = config['AUG']
+delta = []
 
 # sentence variations
 sentence_var_config = aug_config['SENTENCE_VAR']
-delta = []
-for row in df.sample(sentence_var_config['TOTAL_VARS']).iterrows():
+print("performing sentence variation augmentation %d times" % sentence_var_config['TOTAL'])
+for row in df.sample(sentence_var_config['TOTAL']).iterrows():
   intent = row[1]["intent"]
   valid = row[1]["valid"]
   variations = data_proc.getVariations(intent, sentence_var_config['VARS_PER'], sentence_var_config['MUTATION_PROB'])
   delta += [[v, valid] for v in variations]
 
-
 # sentence negations (only on df yes cols)
 sentence_neg_config = aug_config['SENTENCE_NEG']
-for row in df[df.valid == "yes"].sample(sentence_neg_config['TOTAL_NEGS']).iterrows():
+print("performing sentence negation augmentation %d times" % sentence_neg_config['TOTAL'])
+for row in df[df.valid == "yes"].sample(sentence_neg_config['TOTAL']).iterrows():
   intent = row[1]["intent"]
   neg = data_proc.negation(intent)
   delta += [[neg, "no"]]
 
 # shuffled sentences
-# literal garbage sentences
-# vocab garbage sentences
+shuffle_config = aug_config['SHUFFLE']
+print("performing sentence shuffle augmentation %d times" % shuffle_config['TOTAL'])
+for row in df[df.intent.str.split().apply(len) > 3].sample(shuffle_config['TOTAL']).iterrows():
+  intent = data_proc.randShuffle(row[1]["intent"])
+  delta += [[intent, "no"]]
+
+# garbage sentences
+garbage_config = aug_config['GARBAGE']
+print("performing garbage sentence augmentation %d times" % garbage_config['TOTAL'])
+for _ in range(garbage_config['TOTAL']):
+  intent = data_proc.literalGarbage(garbage_config['LENGTH_LOWER_BOUND'], garbage_config['LENGTH_UPPER_BOUND'])
+  delta += [[intent, "no"]]
+
+# vocab mix sentences
+vocab_mix_config = aug_config['VOCAB_GARBAGE']
+print("performing vocab mix sentence augmentation %d times" % vocab_mix_config['TOTAL'])
+t_tokenizer = Tokenizer(num_words=config['TOKENIZER_VOCAB_SIZE'], oov_token = "<OOV>")
+t_tokenizer.fit_on_texts(df.intent)
+delta += [[intent, "no"] for intent in data_proc.vocabGarbage(vocab_mix_config['TOTAL'], vocab_mix_config['TOPK'], t_tokenizer.word_counts)]
 
 appendDF = pd.DataFrame(delta, columns = ['intent', 'valid'])
-print(appendDF)
-# df.append(appendDF)
-
-# print(data_proc.vocabGarbage(3, 50, tokenizer.word_counts))
+df = df.append(appendDF, ignore_index=True, sort=False)
+print("df size after augmentation: %d" % len(df.index))
 
 # create X (input) and Y (expected)
 X = df.intent

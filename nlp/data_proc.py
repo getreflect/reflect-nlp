@@ -95,7 +95,8 @@ def randShuffle(sentence):
 	random.shuffle(w)
 	return " ".join(w)
 
-def literalGarbage(n):
+def literalGarbage(a, b):
+	n = random.randint(a, b)
 	return " ".join(random.sample(words.words(), n))
 
 def vocabGarbage(n, topk, word_counts):
