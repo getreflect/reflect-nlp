@@ -19,7 +19,6 @@ from sklearn.preprocessing import LabelEncoder
 # -- Local imports --
 import net
 import data_proc
-import augment
 
 # -- Parse config.yaml Parameters --
 try: 
@@ -41,6 +40,7 @@ df['intent'] = df.intent.apply(str)
 df['intent'] = df.intent.apply(data_proc.stripPunctuation)
 df['intent'] = df.intent.apply(data_proc.stripCaps)
 df['intent'] = df.intent.apply(data_proc.rmPersonalPrefix)
+df['intent'] = df.intent.apply(data_proc.stripStopWords)
 
 # create X (input) and Y (expected)
 X = df.intent
