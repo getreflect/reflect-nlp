@@ -1,6 +1,8 @@
 import string
 import random
 from nltk.corpus import wordnet
+from nltk.corpus import words
+import heapq
 
 stop_words = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'd', 'll', 'm', 'o', 're', 've', 'y', 'ain', 'aren', 'couldn', 'didn', 'doesn', 'hadn', 'hasn', 'haven', 'isn', 'ma', 'mightn', 'mustn', 'needn', 'shan', 'shouldn', 'wasn', 'weren', 'won', 'wouldn']
 
@@ -16,9 +18,8 @@ contractions = {
 
 # remove punctuation from string
 def stripPunctuation(s):
-	for c in string.punctuation:
+	for c in string.punctuation + "’":
 		s = s.replace(c, "")
-	print(s)
 	return s
 
 # to lower
@@ -70,17 +71,16 @@ def getVariations(sentence, num, mutationprob = 0.25):
 		res.add(" ".join(words))
 	return list(res)
 
-def expanContractions(sentence):
+def expandContractions(sentence):
 	words = sentence.split(" ")
 
-	res = ""
+	res = []
 	for w in words:
 		if w in contractions:
-			res += contractions[w]
+			res.append(contractions[w])
 		else:
-			res += w
-		res += " "
-	return res[:-1]
+			res.append(w)
+	return " ".join(res)
 
 # call after expanding contractions
 # lower case, and stopword removal
@@ -96,10 +96,20 @@ def randShuffle(sentence):
 	random.shuffle(w)
 	return " ".join(w)
 
-def literalGarbage():
-	pass
+def literalGarbage(n):
+	return " ".join(random.sample(words.words(), n))
 
-print(getVariations("trying to do some marketing work for my job", 3))
-print(randShuffle("sometimes i dont feel so good mr stark"))
-print(stripStopWords(expanContractions("im gonna go and dont do work")))
-print(negation(stripStopWords(expanContractions("im gonna go and dont do work"))))
+def vocabGarbage(n, topk, word_counts):
+	print(type(word_counts))
+	heap = [(-value, key) for key, value in word_counts.items()]
+	largest = heapq.nsmallest(topk, heap)
+	largest = [(key, -value) for value, key in largest]
+
+	res = []
+	for _ in range(n):
+		sentence = []
+		for _ in range(random.randint(2, 10)):
+			sentence.append(random.choice(largest)[0])
+		res.append(" ".join(sentence))
+
+	return res

@@ -39,12 +39,16 @@ df['intent'] = df.intent.apply(str)
 # Clean text
 df['intent'] = df.intent.apply(data_proc.stripPunctuation)
 df['intent'] = df.intent.apply(data_proc.stripCaps)
-df['intent'] = df.intent.apply(data_proc.rmPersonalPrefix)
 df['intent'] = df.intent.apply(data_proc.stripStopWords)
 
 # create X (input) and Y (expected)
 X = df.intent
 Y = df.valid
+
+# make tokenizer
+tokenizer = Tokenizer(num_words=config['TOKENIZER_VOCAB_SIZE'], oov_token = "<OOV>")
+tokenizer.fit_on_texts(X)
+print(data_proc.vocabGarbage(3, 50, tokenizer.word_counts))
 
 # create new Label encoder
 labelEncoder = LabelEncoder()
@@ -60,8 +64,6 @@ print('-- Some sample intents --')
 print(X.tail(5))
 
 # Data processing
-tokenizer = Tokenizer(num_words=config['TOKENIZER_VOCAB_SIZE'], oov_token = 0)
-tokenizer.fit_on_texts(X_train)
 seqs = tokenizer.texts_to_sequences(X_train)
 padded_seqs = sequence.pad_sequences(
     seqs, maxlen=config['SEQUENCE_MAX_LENGTH'])
@@ -73,8 +75,6 @@ model.compile(loss='binary_crossentropy',
               optimizer=RMSprop(), metrics=['accuracy'])
 
 # Model Training
-print(padded_seqs.shape)
-print(Y_train.shape)
 model.fit(padded_seqs, Y_train, batch_size=config['BATCH_SIZE'], epochs=config['NUM_EPOCHS'],
           validation_split=config['VALIDATION_SPLIT'], callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.000001, patience=2)])
 
