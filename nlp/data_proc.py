@@ -1,4 +1,4 @@
-PUNC_CHARS = "\'\"?!:;@.,"
+PUNC_CHARS = "!\"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~"
 
 # remove I, I'm from start
 def rmPersonalPrefix(s):

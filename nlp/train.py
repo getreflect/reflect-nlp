@@ -19,6 +19,7 @@ from sklearn.preprocessing import LabelEncoder
 # -- Local imports --
 import net
 import data_proc
+import augment
 
 # -- Parse config.yaml Parameters --
 try: 
@@ -55,7 +56,7 @@ Y = labelEncoder.fit_transform(Y)
 Y = Y.reshape(-1, 1)
 # output is now one hot encoded
 
-# Train/Test split, 15% test set
+# Train/Test split based on config
 X_train, X_test, Y_train, Y_test = train_test_split(
     X, Y, test_size=config['TRAIN_TEST_SPLIT'])
 
