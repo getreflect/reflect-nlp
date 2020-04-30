@@ -42,7 +42,30 @@ df['intent'] = df.intent.apply(data_proc.stripCaps)
 df['intent'] = df.intent.apply(data_proc.expandContractions)
 df['intent'] = df.intent.apply(data_proc.stripStopWords)
 
-print("df size before augmentation: %d" % len(df.index))
+# create X (input) and Y (expected)
+X = df.intent
+Y = df.valid
+
+# create new Label encoder
+label_encoder = LabelEncoder()
+Y = label_encoder.fit_transform(Y)
+YES_VAL = label_encoder.transform(["yes"])
+NO_VAL = label_encoder.transform(["no"])
+Y = Y.reshape(-1, 1)
+
+# Train/Test split based on config
+X_train, X_test, Y_train, Y_test = train_test_split(
+    X, Y, test_size=config['TRAIN_TEST_SPLIT'])
+
+print('-- Some sample intents --')
+print(X.tail(5))
+
+# Data processing
+# make tokenizer
+tokenizer = Tokenizer(num_words=config['TOKENIZER_VOCAB_SIZE'], oov_token = "<OOV>")
+tokenizer.fit_on_texts(X_train)
+
+print("df size before augmentation: %d" % len(X_train.index))
 
 ### Data Augmentation
 aug_config = config['AUG']
@@ -53,7 +76,7 @@ sentence_var_config = aug_config['SENTENCE_VAR']
 print("performing sentence variation augmentation %d times" % sentence_var_config['TOTAL'])
 for row in df.sample(sentence_var_config['TOTAL']).iterrows():
   intent = row[1]["intent"]
-  valid = row[1]["valid"]
+  valid = YES_VAL if row[1]["valid"] == "yes" else NO_VAL
   variations = data_proc.getVariations(intent, sentence_var_config['VARS_PER'], sentence_var_config['MUTATION_PROB'])
   delta += [[v, valid] for v in variations]
 
@@ -63,55 +86,34 @@ print("performing sentence negation augmentation %d times" % sentence_neg_config
 for row in df[df.valid == "yes"].sample(sentence_neg_config['TOTAL']).iterrows():
   intent = row[1]["intent"]
   neg = data_proc.negation(intent)
-  delta += [[neg, "no"]]
+  delta += [[neg, NO_VAL]]
 
 # shuffled sentences
 shuffle_config = aug_config['SHUFFLE']
 print("performing sentence shuffle augmentation %d times" % shuffle_config['TOTAL'])
 for row in df[df.intent.str.split().apply(len) > 3].sample(shuffle_config['TOTAL']).iterrows():
   intent = data_proc.randShuffle(row[1]["intent"])
-  delta += [[intent, "no"]]
+  delta += [[intent, NO_VAL]]
 
 # garbage sentences
 garbage_config = aug_config['GARBAGE']
 print("performing garbage sentence augmentation %d times" % garbage_config['TOTAL'])
 for _ in range(garbage_config['TOTAL']):
   intent = data_proc.literalGarbage(garbage_config['LENGTH_LOWER_BOUND'], garbage_config['LENGTH_UPPER_BOUND'])
-  delta += [[intent, "no"]]
+  delta += [[intent, NO_VAL]]
 
 # vocab mix sentences
 vocab_mix_config = aug_config['VOCAB_GARBAGE']
 print("performing vocab mix sentence augmentation %d times" % vocab_mix_config['TOTAL'])
 t_tokenizer = Tokenizer(num_words=config['TOKENIZER_VOCAB_SIZE'], oov_token = "<OOV>")
 t_tokenizer.fit_on_texts(df.intent)
-delta += [[intent, "no"] for intent in data_proc.vocabGarbage(vocab_mix_config['TOTAL'], vocab_mix_config['TOPK'], t_tokenizer.word_counts)]
+delta += [[intent, NO_VAL] for intent in data_proc.vocabGarbage(vocab_mix_config['TOTAL'], vocab_mix_config['TOPK'], t_tokenizer.word_counts)]
 
 appendDF = pd.DataFrame(delta, columns = ['intent', 'valid'])
-df = df.append(appendDF, ignore_index=True, sort=False)
-print("df size after augmentation: %d" % len(df.index))
+X_train = X_train.append(appendDF.intent)
+Y_train = np.append(Y_train, appendDF.valid)
+print("df size after augmentation: %d" % len(X_train.index))
 
-# create X (input) and Y (expected)
-X = df.intent
-Y = df.valid
-
-# make tokenizer
-tokenizer = Tokenizer(num_words=config['TOKENIZER_VOCAB_SIZE'], oov_token = "<OOV>")
-tokenizer.fit_on_texts(X)
-
-# create new Label encoder
-labelEncoder = LabelEncoder()
-Y = labelEncoder.fit_transform(Y)
-Y = Y.reshape(-1, 1)
-# output is now one hot encoded
-
-# Train/Test split based on config
-X_train, X_test, Y_train, Y_test = train_test_split(
-    X, Y, test_size=config['TRAIN_TEST_SPLIT'])
-
-print('-- Some sample intents --')
-print(X.tail(5))
-
-# Data processing
 seqs = tokenizer.texts_to_sequences(X_train)
 padded_seqs = sequence.pad_sequences(
     seqs, maxlen=config['SEQUENCE_MAX_LENGTH'])
