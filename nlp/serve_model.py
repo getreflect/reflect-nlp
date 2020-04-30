@@ -48,7 +48,8 @@ class Model():
         # clean input X
         X = data_proc.stripPunctuation(X)
         X = data_proc.stripCaps(X)
-        X = data_proc.rmPersonalPrefix(X)
+        X = data_proc.expandContractions(X)
+        X = data_proc.stripStopWords(X)
 
         # tokenize input
         seq = self.tokenizer.texts_to_sequences([X])

@@ -126,7 +126,7 @@ model.compile(loss='binary_crossentropy',
 
 # Model Training
 model.fit(padded_seqs, Y_train, batch_size=config['BATCH_SIZE'], epochs=config['NUM_EPOCHS'],
-          validation_split=config['VALIDATION_SPLIT'], callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.000001, patience=2)])
+          validation_split=config['VALIDATION_SPLIT'], callbacks=[EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=3)])
 
 # Run model on test set
 test_seqs = tokenizer.texts_to_sequences(X_test)
