@@ -4,6 +4,10 @@ import getopt
 import yaml
 
 import data_proc
+import train
+import pandas as pd
+
+from tqdm import tqdm
 
 from keras.preprocessing import sequence
 from keras.preprocessing.text import Tokenizer
@@ -58,13 +62,30 @@ class Model():
         padded_seq = sequence.pad_sequences(
             seq, maxlen=self.params["SEQUENCE_MAX_LENGTH"])
 
-        print(padded_seq)
-
         # predict
         preds = self.loaded_model.predict(padded_seq)[0][0]
 
         # return thresholded value
         return (preds > self.threshold)
+
+    def eval_on_csv(self, path):
+        df = pd.read_csv(path)
+        train.clean_df(df)
+        X = df.intent
+        Y = df.valid
+
+        print('Evalutating on given data...')
+        out = list(zip(df.valid, [self.pred(S) for S in tqdm(df.intent)]))
+
+        incorrect = []
+        for (i, (label, pred)) in enumerate(out):
+            label_val = label == "yes"
+            if label_val != pred:
+                incorrect.append(f"'{X[i]}' -> {pred} != {label_val}")
+
+        print('Examples model got wrong:')
+        print("\n".join(incorrect))
+        return (1 - (len(incorrect) / len(out))) * 100
 
 # parse command line arguments if run directly
 if __name__ == '__main__':
@@ -72,14 +93,14 @@ if __name__ == '__main__':
     argv = sys.argv[1:]
 
     # define default parameters
-    model = 'acc84.78'
+    model = 'acc85.95'
     threshold = 0.5
     intent = 'need to do some work'
 
-    # acceptable flags -> -h, -i, -h, -t
-    # full length flags -> --help, --intent, --model, --threshold
-    unixOptions = "hm:t:i:"
-    gnuOptions = ["help", "intent=", "model", "threshold"]
+    # acceptable flags -> -h, -i, -h, -t, -e
+    # full length flags -> --help, --intent, --model, --threshold, --eval
+    unixOptions = "hm:t:i:e:"
+    gnuOptions = ["help", "intent=", "model", "threshold", "eval"]
 
     # string to print on -h or err
     errString = 'serve_model.py -m <nameofmodel> -t <threshold> -i <intent>'
@@ -101,6 +122,10 @@ if __name__ == '__main__':
             intent = arg
         elif opt in ("-m", "--model"):
             model = arg
+        elif opt in ("-e", "--eval"):
+            m = Model(model, threshold)
+            print(f"Accuracy: {m.eval_on_csv(arg)}")
+            sys.exit(0)
 
     # create actual model
     m = Model(model, threshold)
