@@ -19,7 +19,10 @@ contractions = {
 # remove punctuation from string
 def stripPunctuation(s):
 	for c in string.punctuation + "’":
-		s = s.replace(c, "")
+		if c in ["'", "’"]:
+			s = s.replace(c, " ")
+		else:
+			s = s.replace(c, "")
 	return s
 
 # to lower
@@ -110,5 +113,4 @@ def vocabGarbage(n, topk, word_counts):
 		for _ in range(random.randint(2, 10)):
 			sentence.append(random.choice(largest)[0])
 		res.append(" ".join(sentence))
-
 	return res

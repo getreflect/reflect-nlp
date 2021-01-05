@@ -129,12 +129,12 @@ python serve_model.py -i "I want to browse memes"
 
 ### Using different NLP models on the server.
 
-Currently, the server is running a default model of the `acc81.08` model. This is defined in `server.py` as follows,
+Currently, the server is running a default model of the `acc85.95` model. This is defined in `server.py` as follows,
 
 ```python
 if __name__ == '__main__':
     logging.info("Starting server...")
-    m = Model("acc81.08", threshold=0.5)
+    m = Model("acc85.95", threshold=0.5)
     app.run()
 ```
 
