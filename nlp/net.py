@@ -1,10 +1,10 @@
-from keras.layers import Activation
-from keras.layers import Dense
-from keras.layers import Dropout
-from keras.layers import Embedding
-from keras.layers import Input
-from keras.layers import LSTM
-from keras.models import Model
+from tensorflow.keras.layers import Activation
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Embedding
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import LSTM
+from tensorflow.keras.models import Model
 
 # Define RNN Architecture
 def RNN(max_seq_len, vocab_size):
