@@ -8,11 +8,11 @@ import json
 import datetime
 
 # -- Deep Learning Libraries --
-from keras.callbacks import EarlyStopping
-from keras.optimizers import RMSprop
-from keras.preprocessing import sequence
-from keras.preprocessing.text import Tokenizer
-from keras.utils import to_categorical
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.optimizers import RMSprop
+from tensorflow.keras.preprocessing import sequence
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 

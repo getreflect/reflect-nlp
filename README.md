@@ -84,7 +84,7 @@ For local development, you can run the server by doing `python server.py`, which
 
 ### Training the NLP Model
 
-You can train a new version of the neural network on the `data/survey.csv` data by doing `python train.py`. This will begin training of a basic 64 cell LSTM model (which is defined in `net.py`). You can configure the training parameters which are constants at the top of `train.py`.
+You can train a new version of the neural network on the `data/cumulative.csv` data by doing `python train.py`. This will begin training of a basic 64 cell LSTM model (which is defined in `net.py`). You can configure the training parameters which are constants at the top of `train.py`.
 
 ```python
 TOKENIZER_VOCAB_SIZE = 500 # Vocabulary size of the tokenizer

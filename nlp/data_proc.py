@@ -13,7 +13,7 @@ contractions = {
 	"havent": "have not",
 	"doesnt": "does not",
 	"he'll": "he will",
-	"she'll": "she will"	
+	"she'll": "she will"
 }
 
 # remove punctuation from string
